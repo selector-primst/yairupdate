@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="app-version" content="1.7.2">
+<meta name="update-url" content="https://shawnfang26-wq.github.io/yair-update/version.json">
+<title>Fang冷库冷量测试计算</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --card2:#26334a; --line:#334155;
+  --txt:#e2e8f0; --sub:#94a3b8; --acc:#38bdf8; --acc2:#22d3ee;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --gold:#facc15;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Microsoft YaHei","PingFang SC",sans-serif;-webkit-tap-highlight-color:transparent}
+body{-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{background:linear-gradient(160deg,#0f172a,#1a2438);color:var(--txt);min-height:100vh;padding-bottom:60px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+header{text-align:center;padding:22px 10px 14px}
+header h1{font-size:26px;background:linear-gradient(90deg,#38bdf8,#22d3ee,#4ade80);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:2px}
+header p{color:var(--sub);font-size:13px;margin-top:6px}
+.tabs{display:flex;gap:10px;justify-content:center;margin:14px 0 18px;flex-wrap:wrap}
+.tabs button{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:10px 22px;border-radius:10px;font-size:15px;cursor:pointer;transition:.2s}
+.tabs button.active{background:linear-gradient(90deg,#0ea5e9,#06b6d4);color:#fff;border-color:transparent;font-weight:bold}
+.panel{display:none}
+.panel.active{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{font-size:16px;color:var(--acc);margin-bottom:14px;padding-left:10px;border-left:4px solid var(--acc)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:9px 10px;font-size:14px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--acc)}
+.field small{color:#64748b;font-size:11px}
+.check{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:14px;cursor:pointer;user-select:none}
+.check input{width:17px;height:17px;accent-color:#0ea5e9}
+.btn{display:inline-block;background:linear-gradient(90deg,#0ea5e9,#06b6d4);color:#fff;border:none;border-radius:10px;padding:13px 34px;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(14,165,233,.35)}
+.btn:hover{filter:brightness(1.12)}
+.btnrow{text-align:center;margin:20px 0}
+.result{background:linear-gradient(160deg,#152540,#1b3a5c);border:1px solid #2563eb;border-radius:14px;padding:18px;margin-top:16px;display:none}
+.result.show{display:block}
+.total{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;justify-content:center;margin:10px 0 4px}
+.total .num{font-size:40px;font-weight:900;color:var(--gold)}
+.total .unit{font-size:16px;color:var(--sub)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kpi{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:20px;color:var(--acc2);margin-top:3px}
+.kpi span{font-size:12px;color:var(--sub)}
+.kpi.hl{background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35)}
+.kpi.hl b{color:var(--gold)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+th{background:rgba(56,189,248,.12);color:var(--acc);font-weight:normal}
+td.r{text-align:right}
+.bar{height:14px;background:#0f172a;border-radius:7px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+.bar i{display:block;height:100%;border-radius:7px;transition:width .6s}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;margin-left:6px;vertical-align:middle}
+.tag.ok{background:rgba(74,222,128,.15);color:var(--ok);border:1px solid rgba(74,222,128,.4)}
+.tag.warn{background:rgba(251,191,36,.12);color:var(--warn);border:1px solid rgba(251,191,36,.4)}
+.tag.bad{background:rgba(248,113,113,.12);color:var(--bad);border:1px solid rgba(248,113,113,.4)}
+.disc{margin-top:14px;padding:10px;background:rgba(251,191,36,.08);border:1px dashed rgba(251,191,36,.45);border-radius:8px;color:var(--gold);font-size:13px;text-align:center}
+.note{font-size:12px;color:#64748b;line-height:1.7;margin-top:10px}
+.hint{font-size:12px;margin-top:6px;min-height:16px;line-height:1.5}
+.hint.err{color:#f87171;font-weight:600}
+.hint.ok{color:#4ade80}
+input.input-err{border-color:#f87171 !important;box-shadow:0 0 0 1px rgba(248,113,113,.35)}
+.formula{background:#0b1220;border-radius:8px;padding:10px 12px;font-size:12px;color:#7dd3fc;line-height:1.9;margin-top:10px;font-family:Consolas,monospace;overflow-x:auto}
+.mach{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;background:var(--card2)}
+.mach h4{font-size:14px;color:var(--txt)}
+.mach .mrow{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--sub);margin-top:6px}
+.mach .mrow b{color:var(--acc2)}
+.mach.best{border-color:var(--ok);box-shadow:0 0 12px rgba(74,222,128,.15)}
+footer{text-align:center;color:#475569;font-size:12px;margin-top:26px}
+@media(max-width:640px){
+  .wrap{padding:10px}
+  .grid{grid-template-columns:1fr 1fr}
+  .total .num{font-size:30px}
+  header h1{font-size:22px}
+  .tabs button{padding:9px 14px;font-size:14px}
+  .card{padding:14px;border-radius:12px}
+  .card h2{font-size:15px}
+  .field input,.field select{font-size:16px;padding:10px}  /* 16px防iOS缩放 */
+  .btn{width:100%;padding:15px;font-size:17px}
+  table{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+  th,td{padding:8px 6px;font-size:12px}
+  .kpi b{font-size:18px}
+  .disc{font-size:12px}
+}
+@media(max-width:360px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>❄ Fang 冷库冷量测试计算 ❄</h1>
+  <p>专业冷库负荷计算 · 水结冰冷量计算 · 扬子机组多机型方案匹配</p>
+  <p style="color:#4ade80;font-size:12px;margin-top:4px">● 离线可用 · 无需网络 · 数据全部内置于本文件</p>
+  <div style="margin-top:10px">
+    <span style="font-size:12px;color:#64748b">v<span id="ver_tag">--</span></span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="active" data-p="p1">🧊 冷库冷量计算</button>
+  <button data-p="p2">💧 水变冰冷量计算</button>
+  <button data-p="p3">📋 机型冷量库</button>
+</div>
+
+<!-- ============ 页面1 冷库冷量 ============ -->
+<div class="panel active" id="p1">
+
+<div class="card">
+  <h2>① 库体尺寸与围护结构</h2>
+  <div class="grid">
+    <div class="field"><label>库内长 L (m)</label><input type="number" id="c_len" value="4" step="1" min="1"></div>
+    <div class="field"><label>库内宽 W (m)</label><input type="number" id="c_wid" value="3" step="1" min="1"></div>
+    <div class="field"><label>库内高 H (m)</label><input type="number" id="c_hig" value="2.8" step="1" min="1"></div>
+    <div class="field"><label>保温厚度 δ (mm)</label><input type="number" id="c_thk" value="100" step="10" min="50"></div>
+    <div class="field"><label>围护结构导热系数 λ (W/m·K)</label>
+      <!-- ③ 保温材料：想加新材料，在此处加一行 <option value="导热系数">名称</option> 即可 -->
+      <select id="c_lam">
+        <option value="0.020">聚氨酯板 0.020</option>
+        <option value="0.024" selected>聚氨酯板 0.024</option>
+        <option value="0.022">聚异氰脲酸酯 PIR 0.022</option>
+        <option value="0.034">聚苯乙烯 EPS 0.034</option>
+        <option value="0.030">挤塑板 XPS 0.030</option>
+      </select></div>
+  </div>
+  <div style="margin-top:12px"><label style="font-size:13px;color:var(--sub)">几面体保温（选择哪些面与外界接触需要隔热）：</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <label class="check"><input type="checkbox" id="f_top" checked>顶面</label>
+      <label class="check"><input type="checkbox" id="f_e" checked>前墙</label>
+      <label class="check"><input type="checkbox" id="f_w" checked>后墙</label>
+      <label class="check"><input type="checkbox" id="f_s" checked>左墙</label>
+      <label class="check"><input type="checkbox" id="f_n" checked>右墙</label>
+      <label class="check"><input type="checkbox" id="f_bot">地面（有保温）</label>
+      <label class="check"><input type="checkbox" id="f_botbare">地面无保温（水泥地面）</label>
+    </div>
+    <div class="hint" id="f_bot_hint"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>② 温度工况与降温时间</h2>
+  <div class="grid">
+    <div class="field"><label>目标设定温度 (℃) <small>范围 -20 ~ 40℃</small></label><input type="number" id="c_tin" value="-20" step="1" max="40" min="-20"><div class="hint" id="c_tin_hint"></div></div>
+    <div class="field"><label>外界环境温度 (℃) <small>&gt;37℃ 按 40℃ 计</small></label><input type="number" id="c_tenv" value="35" step="1" max="60" min="-20"><div class="hint" id="c_tenv_hint"></div></div>
+    <div class="field"><label>入库货物温度 (℃)</label><input type="number" id="c_tprod_in" value="25" step="1"></div>
+    <div class="field"><label>出库货物温度 (℃)</label><input type="number" id="c_tprod_out" value="-18" step="1"></div>
+    <div class="field"><label>允许降温时间 (h)</label><input type="number" id="c_time" value="24" step="1" min="1"></div>
+    <div class="field"><label>压缩机组每日运行时间 (h) <small>常规 18~20，24 为连续满负荷运行</small></label><input type="number" id="c_run" value="24" step="1" min="6" max="24"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>③ 货物与有效库容</h2>
+  <div class="grid">
+    <div class="field"><label>货物种类</label>
+      <!-- ② 货物下拉：新增货物在此加一行，value 要与数据区 GOODS 里的代号一致 -->
+      <select id="c_goods">
+        <option value="meat">冻猪肉/牛肉（含水率≈65%）</option>
+        <option value="fish">冻鱼/水产（含水率≈70%）</option>
+        <option value="chicken">冻禽类（含水率≈68%）</option>
+        <option value="vegf">果蔬保鲜（含水率≈90%）</option>
+        <option value="dairy">乳制品（含水率≈75%）</option>
+        <option value="icecream">冰淇淋（含水率≈62%）</option>
+        <option value="custom">自定义…</option>
+      </select></div>
+    <div class="field"><label>货物初始含水率 w (%)</label><input type="number" id="c_water" value="65" step="1" min="0" max="95"></div>
+    <div class="field"><label>冻结前比热容 c₁ (kJ/kg·℃)</label><input type="number" id="c_cp1" value="3.2" step="0.1"></div>
+    <div class="field"><label>冻结后比热容 c₂ (kJ/kg·℃)</label><input type="number" id="c_cp2" value="1.7" step="0.1"></div>
+    <div class="field"><label>单次进货量 (kg)</label><input type="number" id="c_load" value="1000" step="100" min="1"></div>
+    <div class="field"><label>堆码方式 <small>影响货物堆密度</small></label>
+      <!-- ④ 堆码方式：value = 堆码对基准密度的折减系数 -->
+      <select id="c_stack">
+        <option value="0.75">散堆（折减 75%）</option>
+        <option value="0.85" selected>托盘码放（折减 85%）</option>
+        <option value="0.95">货架码放（折减 95%）</option>
+        <option value="1.00">密集码放（不折减）</option>
+      </select></div>
+  </div>
+  <div class="note">📐 依据《冷库设计标准》GB 50072-2021 计算：<br>
+  <b>储存吨位 = 库内容积 × 容积利用系数 η × 食品计算密度 ρ ÷ 1000</b><br>
+  · <b>容积利用系数 η</b> 按库容分档（标准 3.0.3 条：已扣除通道、设备、柱子、托盘等占用空间）<br>
+  · <b>食品计算密度 ρ</b> 依标准表 3.0.5 取值，再按所选堆码方式折减<br>
+  · 采用货架储存时，标准 3.0.4 条规定可按货位最大存放量总和计算</div>
+</div>
+
+<div class="card">
+  <h2>④ 附加热负荷</h2>
+  <div class="grid">
+    <div class="field"><label>每日开门次数 (次/天)</label><input type="number" id="c_door" value="10" step="1" min="0"></div>
+    <div class="field"><label>库内工作人员 (人)</label><input type="number" id="c_ppl" value="1" step="1" min="0"></div>
+    <div class="field"><label>人均散热 (W/人) <small>低温库约 250~400</small></label><input type="number" id="c_ppw" value="300" step="10"></div>
+    <div class="field"><label>库内设备发热 (W) <small>风机/照明等</small></label><input type="number" id="c_dev" value="0" step="10" min="0"></div>
+    <div class="field"><label>融霜热负荷 (W) <small>融霜热负荷</small></label><input type="number" id="c_def" value="0" step="10" min="0"></div>
+    <label class="check" style="align-self:end"><input type="checkbox" id="c_air">是否需要换气（果蔬/保鲜库）</label>
+    <div class="field"><label>每日换气次数 (次/天)</label><input type="number" id="c_airn" value="3" step="1" min="1"></div>
+    <label class="check" style="align-self:end"><input type="checkbox" id="c_floor">地面防冻加热</label>
+    <div class="field"><label>地面加热功率 (W/m²)</label><input type="number" id="c_floorw" value="15" step="5" min="0"></div>
+    <div class="field"><label>地下土壤温度 (℃) <small>用于无保温地面漏热</small></label><input type="number" id="c_tsoil" value="12" step="1"></div>
+    <div class="field"><label>水泥地面传热系数 K (W/m²·℃) <small>默认 0.6（含土壤热阻），漏热 = K × 库温与土壤温差，自动计算</small></label><input type="number" id="c_kg" value="0.6" step="0.1" min="0"></div>
+    <div class="field"><label>安全余量预留 (%)</label><input type="number" id="c_safe" value="30" step="1" min="0" max="100"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>⑤ 机组筛选条件</h2>
+  <div class="grid">
+    <div class="field"><label>电源制式</label>
+      <select id="c_pw"><option value="all">不限（220V / 380V）</option><option value="220">单相 220V</option><option value="380">三相 380V</option></select></div>
+    <div class="field"><label>冷媒类型</label>
+      <select id="c_ref"><option value="all">不限（R32 / R410）</option><option value="R32">R32</option><option value="R410a">R410</option></select></div>
+  </div>
+</div>
+
+<div class="btnrow"><button class="btn" onclick="runCold()">🔥 计算总冷量并匹配机型</button></div>
+<div class="result" id="r1"></div>
+</div>
+
+<!-- ============ 页面2 水变冰 ============ -->
+<div class="panel" id="p2">
+<div class="card">
+  <h2>💧 水变冰（制冰）冷量计算</h2>
+  <div class="grid">
+    <div class="field"><label>水量 (kg) <small>1 kg = 2 斤</small></label><input type="number" id="i_m" value="50" step="1" min="1"></div>
+    <div class="field"><label>水初温 (℃)</label><input type="number" id="i_t1" value="25" step="1"></div>
+    <div class="field"><label>目标冰温 (℃)</label><input type="number" id="i_t2" value="-10" step="1" max="0"></div>
+    <div class="field"><label>允许结冰时间 (h) <small>如 100 斤水 1 小时变冰 → 水量 50kg、时间 1</small></label><input type="number" id="i_t" value="1" step="1" min="0.5"></div>
+    <div class="field"><label>外界环境温度 (℃) <small>&gt;37℃ 按 40℃ 计</small></label><input type="number" id="i_tenv" value="35" step="1"></div>
+    <div class="field"><label>压缩机组每日运行时间 (h)</label><input type="number" id="i_run" value="18" step="1" min="6" max="24"></div>
+    <div class="field"><label>安全余量预留 (%)</label><input type="number" id="i_safe" value="30" step="1" min="0" max="100"></div>
+    <div class="field"><label>电源制式</label>
+      <select id="i_pw"><option value="all">不限</option><option value="220">单相 220V</option><option value="380">三相 380V</option></select></div>
+    <div class="field"><label>冷媒类型</label>
+      <select id="i_ref"><option value="all">不限</option><option value="R32">R32</option><option value="R410a">R410</option></select></div>
+  </div>
+  <div class="formula">
+专业水结冰冷量公式（三段热负荷）：<br>
+Q降温 = m × c水 × (t水 − 0)　= m × 4.187 × t水<br>
+Q结冰（相变潜热）= m × 334.9 kJ/kg（0℃ 水变 0℃ 冰）<br>
+Q过冷 = m × c冰 × (0 − t冰)　= m × 2.1 × |t冰|<br>
+总热量 Q总 = Q降温 + Q潜热 + Q过冷 （kJ）<br>
+所需冷量 P(kW) = Q总 ÷ (3600 × t) × 安全系数 ÷ (每日运行时间/24)
+  </div>
+</div>
+<div class="btnrow"><button class="btn" onclick="calcIce()">🔥 计算制冰冷量并匹配机型</button></div>
+<div class="result" id="r2"></div>
+</div>
+
+<!-- ============ 页面3 机型库 ============ -->
+<div class="panel" id="p3">
+<div class="card">
+  <h2>📋 扬子冷库机组冷量库（33 款机型 · 数据来自厂家冷量表）</h2>
+  <div class="grid">
+    <div class="field"><label>筛选电源</label>
+      <select id="v_pw" onchange="renderDB()"><option value="all">全部</option><option value="220">220V 单相</option><option value="380">380V 三相</option></select></div>
+    <div class="field"><label>筛选冷媒</label>
+      <select id="v_ref" onchange="renderDB()"><option value="all">全部</option><option value="R32">R32</option><option value="R410a">R410</option></select></div>
+    <div class="field"><label>筛选用途</label>
+      <select id="v_use" onchange="renderDB()"><option value="all">全部</option><option value="LC">冷藏</option><option value="LD">冷冻</option></select></div>
+  </div>
+  <div style="overflow-x:auto"><table id="dbT"></table></div>
+</div>
+</div>
+
+<footer>免责声明：结果仅供参考，需要根据现场实际使用工况结合计算。</footer>
+</div>
+<script>
+/* ==================================================================
+ *  ██████  数据配置区（日常改参数只需改这一段，其余代码不要动） ██████
+ * ==================================================================
+ *  ① 机型库 MACHINES  —— 添加/修改机组、添加冷量
+ *  ② 货物库 GOODS     —— 添加/修改货物含水率与比热容
+ *  ③ 保温材料         —— 在页面 HTML 中 <select id="c_lam"> 处添加
+ *  ④ 堆码方式         —— 在页面 HTML 中 <select id="c_stack"> 处添加
+ *  ⑤ 默认输入值       —— 各输入框的 value="…" 处修改
+ * ================================================================== */
+
+/* ================= ① 机型数据库（扬子冷库机型冷量表） =================
+ *  添加一款机型：在数组末尾加一行，格式如下（逗号结尾）：
+ *  {n:"型号名称", ref:"R32", pw:220, use:"LC", nc:6600,
+ *   t:[[库温℃, 环温32℃W, 环温40℃W],
+ *      [15,    4600,      4100], ... ]}
+ *
+ *  字段说明：
+ *    n   —— 机组型号（页面显示用，随便起名）
+ *    ref —— 冷媒：写 "R32" 或 "R410a"
+ *    pw  —— 电源：写 220（单相220V）或 380（三相380V）
+ *    use —— 用途：写 "LC"（冷藏，库温下限 -5℃）或 "LD"（冷冻，库温下限 -20℃）
+ *    nc  —— 名义制冷量 W（库温27℃/环温32℃下的标注值，仅展示用）
+ *    t   —— 制冷量表：每一行 = [库温℃, 环温32℃制冷量W, 环温40℃W, (45℃W), (50℃W)]
+ *            · 库温从高到低排列（如 20→-20）
+ *            · 至少写 32℃ 和 40℃ 两列；有 45℃/50℃ 数据就往后加第4、5列
+ *            · 计算时程序会在两个库温之间自动线性插值
+ * ================================================================= */
+const MACHINES=[
+{n:"YBRLC-02DWf3A-7200(丝接)",ref:"R32",pw:220,use:"LC",nc:6600,t:[[20,5200,4600],[15,4600,4100],[10,3800,3400],[5,2900,2600],[0,2400,2200],[-5,2200,2000]]},
+{n:"YBRLC-03DWf3A-7900(丝接)",ref:"R32",pw:220,use:"LC",nc:7800,t:[[20,6200,5600],[15,5700,5100],[10,5300,4800],[5,4800,4350],[0,4600,3950],[-5,4200,3500]]},
+{n:"YBRLC-05DWf3A-13000(丝接)",ref:"R32",pw:220,use:"LC",nc:12000,t:[[20,10000,9000],[15,9100,8200],[10,8400,7550],[5,7600,6550],[0,7000,5850],[-5,6500,5300]]},
+{n:"YBRLC-05DWSf3A-13000(丝接)",ref:"R32",pw:380,use:"LC",nc:12500,t:[[20,10500,9450],[15,9600,8650],[10,8900,8000],[5,8200,6850],[0,7500,6300],[-5,6800,5600]]},
+{n:"YBRLC-08DWf3A-18000(丝接)",ref:"R32",pw:220,use:"LC",nc:18000,t:[[20,14400,13000],[15,12000,10800],[10,11200,9700],[5,10800,8800],[0,9000,7500],[-5,8300,7100]]},
+{n:"YBRLC-08DWSf3A-18000(丝接)",ref:"R32",pw:380,use:"LC",nc:18000,t:[[20,15500,13950],[15,13800,12400],[10,11800,10600],[5,11600,9550],[0,9800,8300],[-5,9200,7750]]},
+{n:"YBRLD-03DWf3A-7900-Pro2(丝接)",ref:"R32",pw:220,use:"LD",nc:7800,t:[[20,6500,6200,6000,5600],[15,6000,5800,5600,5300],[10,5600,5400,5200,5000],[5,5300,5100,4800,4600],[0,4900,4700,4500,4300],[-5,4700,4500,4300,4100],[-10,3900,3700,3500,3300],[-15,3100,2900,2800,2400],[-20,2500,2300,2200,2000]]},
+{n:"YBRLD-04DWf3A-9000-Pro2(丝接)",ref:"R32",pw:220,use:"LD",nc:10000,t:[[20,9000,8700,8000,6000],[15,8300,8100,7800,6200],[10,7900,7700,7000,6500],[5,7300,7100,6600,6600],[0,6600,6400,6000,5400],[-5,6200,6000,5600,5000],[-10,5700,5500,5200,4800],[-15,5300,5100,4800,4500],[-20,4700,4500,4300,3800]]},
+{n:"YBRLD-05DWf3A-13000-Pro2(丝接)",ref:"R32",pw:220,use:"LD",nc:12000,t:[[20,11000,10800,9900,6600],[15,9900,9700,9300,6900],[10,9400,9200,8600,7200],[5,8600,8400,7900,7300],[0,7700,7500,7100,6200],[-5,6700,6700,6300,5700],[-10,6100,5900,5600,5400],[-15,5700,5500,5200,5000],[-20,5300,5100,5000,4600]]},
+{n:"YBRLD-05DWSf3A-13000-Pro2(丝接)",ref:"R32",pw:380,use:"LD",nc:12500,t:[[20,11000,10900,10000,8000],[15,9800,9600,9400,7300],[10,9400,9200,8700,7100],[5,8600,8400,8000,6900],[0,7800,7600,7200,6600],[-5,7000,6800,6400,6200],[-10,6300,6000,5700,5500],[-15,5800,5600,5300,5000],[-20,5400,5200,5100,4700]]},
+{n:"YBRLD-08DWf3A-18000-Pro2(丝接)",ref:"R32",pw:220,use:"LD",nc:18000,t:[[20,15400,15200,13800,9200],[15,14000,13800,13300,9800],[10,13500,13300,12400,10400],[5,12000,11800,11100,10300],[0,10600,10400,9800,8500],[-5,9600,9400,8900,8100],[-10,8600,8400,8000,7600],[-15,7900,7700,7200,7000],[-20,7200,7000,6800,6300]]},
+{n:"YBRLD-08DWSf3A-18000-Pro2(丝接)",ref:"R32",pw:380,use:"LD",nc:18000,t:[[20,15400,15200,13800,10600],[15,14500,14300,13700,10100],[10,14000,13800,12900,10800],[5,12800,12600,11800,10300],[0,11100,10900,10200,8900],[-5,10100,9900,9400,8500],[-10,9300,9100,8600,7800],[-15,8500,8300,7800,6800],[-20,7700,7500,7300,6500]]},
+{n:"YBRLD-10DWSf3A-22000-Pro2(丝接)",ref:"R32",pw:380,use:"LD",nc:20000,t:[[20,18000,17000,14700,12100],[15,14800,14600,14000,11800],[10,14700,14500,13800,10800],[5,14200,14000,13500,10000],[0,13700,13500,13200,9100],[-5,11500,11300,10400,8700],[-10,10000,9800,9100,8100],[-15,9200,9000,8400,7500],[-20,8800,8600,7900,7100]]},
+{n:"YBRLD-12DWSf3A-33000-Pro2(丝接)",ref:"R32",pw:380,use:"LD",nc:30000,t:[[20,26600,25800,23500,20900],[15,24300,24000,23000,19600],[10,22000,21800,20200,18800],[5,21200,21000,19700,18300],[0,17600,17400,16400,15900],[-5,16400,16000,15600,14100],[-10,14000,13800,13100,12200],[-15,13300,13100,12400,10900],[-20,11500,11300,11000,9800]]},
+{n:"YBRLD-16DWSf3A-41000-Pro2(丝接)",ref:"R32",pw:380,use:"LD",nc:34000,t:[[20,31500,31000,30600,29100],[15,27800,27500,27000,25600],[10,24600,24500,24000,22800],[5,22800,22600,22000,20900],[0,20200,20000,19800,18800],[-5,18500,18300,18000,17100],[-10,16100,16000,15500,14700],[-15,14800,14500,14300,13600],[-20,13200,13000,12700,12100]]},
+{n:"YBRLD-20DWSf3A-50000-Pro2(丝接)",ref:"R32",pw:380,use:"LD",nc:48000,t:[[20,45000,42000,40000,36000],[15,39100,38700,37000,33500],[10,33200,33000,31200,29300],[5,30200,30000,28000,26000],[0,25400,25200,23800,23000],[-5,24500,24300,22900,22300],[-10,21900,21700,20500,19600],[-15,20000,19700,18600,16800],[-20,16400,16200,15700,14500]]},
+{n:"YBRLC-03DWa3A-7100(焊接)",ref:"R410a",pw:220,use:"LC",nc:7000,t:[[20,5600,5050],[15,5100,4600],[10,4800,4350],[5,4500,3900],[0,4200,3780],[-5,3700,3330]]},
+{n:"YBRLC-05DWa3A-12000(焊接)",ref:"R410a",pw:220,use:"LC",nc:11000,t:[[20,9000,8100],[15,8200,7400],[10,7600,6850],[5,6900,5850],[0,6200,5200],[-5,5600,4800]]},
+{n:"YBRLC-05DWSa3A-12000(焊接)",ref:"R410a",pw:380,use:"LC",nc:11500,t:[[20,9500,8550],[15,8700,7850],[10,8100,7300],[5,7500,6300],[0,6800,5700],[-5,6200,5200]]},
+{n:"YBRLC-08DWa3A-16000(焊接)",ref:"R410a",pw:220,use:"LC",nc:16000,t:[[20,13000,11700],[15,11000,9900],[10,10200,8550],[5,9500,7900],[0,8400,7100],[-5,7500,6750]]},
+{n:"YBRLC-08DWSa3A-16000(焊接)",ref:"R410a",pw:380,use:"LC",nc:16000,t:[[20,13500,12150],[15,12000,10800],[10,10900,9450],[5,10200,8550],[0,9200,7850],[-5,8600,7400]]},
+{n:"YBRLD-03DWa3A-7100-Pro2(焊接)",ref:"R410a",pw:220,use:"LD",nc:7000,t:[[20,5800,5600,5400,5000],[15,5300,5200,5000,4800],[10,4900,4800,4700,4500],[5,4500,4400,4300,4100],[0,4200,4100,4000,3800],[-5,3900,3800,3700,3600],[-10,3200,3100,3200,3000],[-15,2400,2300,2200,2100],[-20,2100,2000,1900,1800]]},
+{n:"YBRLD-04DWa3A-8500-Pro2(焊接)",ref:"R410a",pw:220,use:"LD",nc:8000,t:[[20,8100,7800,7200,5400],[15,7500,7300,7000,5600],[10,7100,6900,6300,5800],[5,6600,6400,6000,5900],[0,5900,5700,5400,4800],[-5,5600,5400,5000,4500],[-10,5100,4900,4600,4300],[-15,4700,4500,4300,4000],[-20,3700,3600,3500,3400]]},
+{n:"YBRLD-05DWa3A-12000-Pro2(焊接)",ref:"R410a",pw:220,use:"LD",nc:11000,t:[[20,9900,9700,8900,5900],[15,8900,8700,8300,6100],[10,8400,8200,7700,6400],[5,7700,7500,7100,6500],[0,6900,6700,6300,5500],[-5,6200,6000,5600,5100],[-10,5500,5300,5000,4800],[-15,5100,4900,4600,4500],[-20,4700,4500,4300,4100]]},
+{n:"YBRLD-05DWSa3A-12000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:11500,t:[[20,9900,9800,9000,7200],[15,8800,8600,8400,6500],[10,8400,8200,7800,6300],[5,7700,7500,7200,6200],[0,7000,6800,6400,5900],[-5,6100,6100,5700,5500],[-10,5600,5400,5100,4900],[-15,5100,4900,4700,4500],[-20,4800,4600,4500,4200]]},
+{n:"YBRLD-08DWa3A-16000-Pro2(焊接)",ref:"R410a",pw:220,use:"LD",nc:16000,t:[[20,13800,13600,12400,8200],[15,12600,12400,11900,8800],[10,12100,11900,11100,9300],[5,10900,10600,10000,9200],[0,9500,9300,8800,7600],[-5,8600,8400,8000,7200],[-10,7700,7500,7200,6800],[-15,6400,6200,6000,5800],[-20,5800,5600,5500,5400]]},
+{n:"YBRLD-08DWSa3A-16000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:16000,t:[[20,13800,13600,12400,9500],[15,13000,12800,12300,9000],[10,12700,12400,11600,9700],[5,11500,11300,10600,9200],[0,10000,9800,9100,8000],[-5,9100,8900,8400,7600],[-10,8300,8100,7700,7000],[-15,7600,7400,7000,6100],[-20,6800,6700,6500,5800]]},
+{n:"YBRLD-10DWSa3A-20000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:18000,t:[[20,16200,15300,13200,10800],[15,13300,13100,12600,10600],[10,12700,12500,12000,9700],[5,12300,11800,11600,9000],[0,11700,11500,11300,8100],[-5,9900,9600,9300,7800],[-10,8600,8400,8100,7200],[-15,7900,7700,7500,6700],[-20,7500,7400,7100,6300]]},
+{n:"YBRLD-12DWSa3A-32000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:27000,t:[[20,23500,23200,21100,18800],[15,21800,21600,20700,17600],[10,19800,19600,18100,16900],[5,19100,18900,17700,16400],[0,15800,15600,14700,14300],[-5,14600,14400,14000,12600],[-10,12600,12400,11700,10900],[-15,11900,11700,11100,9800],[-20,9800,9700,9500,8800]]},
+{n:"YBRLD-16DWSa3A-37000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:32000,t:[[20,29200,29000,28900,27500],[15,25000,24800,24700,23500],[10,23400,23200,23100,22000],[5,21200,21000,20800,19700],[0,18800,18600,18500,17600],[-5,17300,17000,16800,16000],[-10,15200,15000,14800,14000],[-15,12800,12600,12400,11800],[-20,10500,10300,10100,9600]]},
+{n:"YBRLD-20DWSa3A-45000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:43000,t:[[20,40500,37800,36000,32400],[15,35200,34800,33300,30200],[10,29900,29700,28100,26400],[5,27200,27000,25200,23400],[0,22900,22700,21400,20700],[-5,22100,21900,20600,20100],[-10,19700,19500,18500,17600],[-15,18000,17700,16700,15100],[-20,14760,14600,14100,13100]]},
+{n:"YBRLD-32DWSa3A-80000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:64000,t:[[20,58400,58000,57800,55000],[15,50000,49600,49400,47000],[10,46800,46400,46200,44000],[5,42400,42000,41600,39400],[0,37600,37200,37000,35200],[-5,34600,34000,33600,32000],[-10,30400,30000,29600,28000],[-15,25600,25200,24800,23600],[-20,21000,20600,20200,19200]]},
+{n:"YBRLD-40DWSa3A-90000-Pro2(焊接)",ref:"R410a",pw:380,use:"LD",nc:85000,t:[[20,77000,71800,68400,61600],[15,66800,66100,63300,57400],[10,56800,56400,53400,50200],[5,51700,51300,47900,44500],[0,43500,43100,40700,39300],[-5,42000,41600,39100,38200],[-10,37400,37000,35200,33400],[-15,34200,33600,31700,28700],[-20,28000,27700,26900,24900]]}
+];
+
+/* ================= ② 货物库（含水率%、冻结前比热 kJ/kg·℃、冻结后比热） =================
+ *  添加一种货物：
+ *    1) 在下面加一行，如：  beef:[68,3.2,1.7],   // beef=英文代号，name 在页面下拉里配置
+ *    2) 再到页面 HTML 的 <select id="c_goods"> 里加一行：
+ *       <option value="beef">牛肉（含水率≈68%）</option>      ← value 必须和这里代号一致
+ *  字段：[初始含水率%, 冻结前比热容, 冻结后比热容]
+ *  含水率越高、比热容越大，货物热负荷越大（冻结潜热 = 含水率 × 334.9 kJ/kg）
+ * ================================================================= */
+const GOODS={meat:[65,3.2,1.7],fish:[70,3.5,1.8],chicken:[68,3.3,1.7],vegf:[90,3.9,1.9],dairy:[75,3.6,1.9],icecream:[62,3.3,1.9]};
+
+/* =================================================================
+ *  有效库容 / 储存吨位  ——  依据《冷库设计标准》GB 50072-2021
+ *
+ *  计算公式（标准 3.0.1 ~ 3.0.5 条）：
+ *      储存吨位(t) = 库内容积(m³) × 容积利用系数 η × 食品计算密度 ρ(kg/m³) ÷ 1000
+ *
+ *  · 容积利用系数 η：按库容分档（标准 3.0.3 条，已扣除通道、设备、
+ *    柱子、货物间隔、托盘等所占空间）
+ *       库容 ≤ 500 m³        → 0.40
+ *       500  < V ≤ 1000      → 0.40
+ *       1000 < V ≤ 2000      → 0.50
+ *       2000 < V ≤ 10000     → 0.55
+ *       10000< V ≤ 15000     → 0.60
+ *       V > 15000            → 0.62
+ *
+ *  · 食品计算密度 ρ：标准表 3.0.5（kg/m³）
+ *       冻肉 400 / 冻分割肉 650 / 冻鱼 470 / 篓装箱装鲜蛋 260
+ *       鲜蔬菜 230 / 篓装箱装鲜水果 350 / 冰蛋 700 / 机制冰 750
+ *
+ *  · 堆码方式：对计算密度做折减（散堆留通风与搬运空间、托盘留叉车
+ *    通道；货架按标准 3.0.4 条可按货位最大存放量计，折减最小）
+ * ================================================================= */
+function utilCoef(V){
+  if(V <= 1000) return 0.40;
+  if(V <= 2000) return 0.50;
+  if(V <= 10000) return 0.55;
+  if(V <= 15000) return 0.60;
+  return 0.62;
+}
+/* 国标表 3.0.5 食品计算密度（kg/m³），键名与页面货物下拉对应 */
+const GB_DENSITY={meat:400,fish:470,chicken:550,vegf:230,dairy:600,icecream:500};
+const GB_DENSITY_LABEL={
+  meat:"冻肉", fish:"冻鱼", chicken:"箱装冻家禽",
+  vegf:"鲜蔬菜/鲜水果", dairy:"乳制品", icecream:"冷冻饮品"
+};
+/* 堆码方式对密度的折减已在 select value 中体现 */
+
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toLocaleString('zh-CN',{maximumFractionDigits:1});
+const fmt0=n=>Math.round(n).toLocaleString('zh-CN');
+
+/* ===== 环温档位：用户要求 >37℃ 按 40℃ 计算 ===== */
+function envCol(te){
+  if(te<=32) return 32;
+  if(te<=42) return 40;   // 33~42（含>37）按 40℃ 工况
+  if(te<=47) return 45;
+  return 50;
+}
+/* 机型在某库温/环温下的制冷量（线性插值，超出最低档位时按趋势外推，避免高估） */
+function capAt(m,roomT,envT){
+  const col={32:1,40:2,45:3,50:4}[envCol(envT)];
+  const t=m.t;
+  if(roomT>=t[0][0]) return t[0][col];
+  if(roomT<=t[t.length-1][0]){
+    // 低于最低档位（-20℃）：用最后两档的斜率外推，并做保守修正（每低 1℃ 额外衰减 0.6%）
+    const b1=t[t.length-2], b2=t[t.length-1];
+    const slope=(b2[col]-b1[col])/(b2[0]-b1[0]);   // W/℃（负值：温度越低能力越小）
+    const dt=roomT-b2[0];                          // 负值
+    let v=b2[col]+slope*dt;
+    const extra=1+0.006*Math.abs(dt);              // 深冷附加衰减
+    v=v/extra;
+    return Math.max(Math.round(v),1);
+  }
+  for(let i=0;i<t.length-1;i++){
+    const a=t[i],b=t[i+1];
+    if(roomT<=a[0]&&roomT>=b[0]){
+      const f=(a[0]-roomT)/(a[0]-b[0]);
+      return Math.round(a[col]+(b[col]-a[col])*f);
+    }
+  }
+  return t[0][col];
+}
+/* 机型库温下限：LC 为冷藏型（≥-5℃）；LD 为冷冻型，可覆盖深冷至 -25℃ */
+const useOK=(m,roomT)=> m.use==="LC" ? roomT>=-5 : roomT>=-25;
+/* 库温范围放宽到 -20~40℃ 后（含保鲜/常温工况），
+ * 允许 LC（冷藏）机型覆盖全部中高温区间；LD（冷冻）机型仅用于 ≤0℃ 工况 */
+const machOK=(m,roomT)=> (roomT>-5) ? (m.use==="LC") : useOK(m,roomT);
+
+/* ===== 匹数换算：按制造商 1匹 ≈ 2500W 名义制冷量（行业通行）换算并就近取标准匹档 ===== */
+const STD_P = [1,1.5,2,3,4,5,6,8,10,12,15,16,20,25,30,32];
+function hpLevel(w){
+  const hp=w/2500;
+  let best=STD_P[0];
+  STD_P.forEach(p=>{ if(Math.abs(p-hp)<Math.abs(best-hp)) best=p; });
+  return best;
+}
+/* 生成多联机（多台同规格组合）方案
+ * 思路：把"总冷量需求"按 2 台 / 3 台均分，在候选池中挑选能覆盖"单台所需能力"的机型，
+ *       组合总量达标即成立；并用其名义冷量换算成"匹"标注（如 2×8P）。
+ * @param Qtotal 总冷量需求 W
+ * @param cands  候选列表 [{m,cap}]（cap=该机在本工况实际制冷量）
+ * @param baseHp 主选机型匹数（仅用于文案）
+ * 返回 [{count, unitHp, unitCapW, unitName, totalCapW, marginPct, ref, pw}] */
+function multiSplit(Qtotal, cands, baseHp){
+  const pool=cands.filter(x=>x.cap>0);
+  const results=[];
+  [2,3].forEach(n=>{
+    const need=Qtotal/n;                        // 单台所需实际制冷量
+    // 在同匹档中优选（型号更统一），其次按能力最接近
+    let unit=null;
+    for(const x of pool){
+      if(x.cap*n<Qtotal) continue;              // 组合总量必须达标
+      const d=Math.abs(x.cap-need);
+      if(!unit) { unit=x; continue; }
+      const du=Math.abs(unit.cap-need);
+      // 能力更接近者胜；能力相当时，名义匹数更小者优先（更经济）
+      if(d<du-1 || (Math.abs(d-du)<=1 && x.m.nc<unit.m.nc)) unit=x;
+    }
+    if(!unit) return;
+    const total=unit.cap*n;
+    results.push({
+      count:n,
+      unitHp:hpLevel(unit.m.nc),
+      unitCapW:unit.cap,
+      unitName:unit.m.n,
+      totalCapW:total,
+      marginPct:(total-Qtotal)/Qtotal*100,
+      ref:unit.m.ref, pw:unit.m.pw
+    });
+  });
+  results.sort((a,b)=>(Math.abs(a.marginPct-30)-Math.abs(b.marginPct-30))||(a.count-b.count));
+  return results.slice(0,2);
+}
+
+/* ================= 温度范围校验 =================
+ * 目标设定温度：范围 -20℃ ~ 40℃
+ *   · 超过 40℃ → 提示“已达最高温度”
+ *   · 低于 -20℃ → 提示“已达最低温度”
+ * 环境温度：范围 -20℃ ~ 60℃（>37℃ 按 40℃ 工况计算）
+ */
+const TIN_MAX=40, TIN_MIN=-20, TENV_MAX=60, TENV_MIN=-20;
+
+function _setHint(inputEl, hintEl, msg, isErr){
+  if(!hintEl) return;
+  hintEl.textContent = msg || "";
+  hintEl.className = "hint" + (msg ? (isErr ? " err" : " ok") : "");
+  if(inputEl){
+    if(isErr) inputEl.classList.add("input-err");
+    else      inputEl.classList.remove("input-err");
+  }
+}
+
+/* 校验目标设定温度，返回修正后的值（并给出提示） */
+function checkTin(){
+  const el=$("c_tin"), h=$("c_tin_hint");
+  let v=parseFloat(el.value);
+  if(isNaN(v)) { _setHint(el,h,"",false); return NaN; }
+  if(v > TIN_MAX){
+    _setHint(el,h,"⚠ 已达最高温度（上限 "+TIN_MAX+"℃），已自动按 "+TIN_MAX+"℃ 计算",true);
+    return TIN_MAX;
+  }
+  if(v < TIN_MIN){
+    _setHint(el,h,"⚠ 已达最低温度（下限 "+TIN_MIN+"℃），已自动按 "+TIN_MIN+"℃ 计算",true);
+    return TIN_MIN;
+  }
+  _setHint(el,h,"✓ 温度在有效范围内（"+TIN_MIN+" ~ "+TIN_MAX+"℃）",false);
+  return v;
+}
+
+/* 校验环境温度，返回修正后的值 */
+function checkTenv(){
+  const el=$("c_tenv"), h=$("c_tenv_hint");
+  let v=parseFloat(el.value);
+  if(isNaN(v)) { _setHint(el,h,"",false); return NaN; }
+  if(v > TENV_MAX){
+    _setHint(el,h,"⚠ 已达最高温度（上限 "+TENV_MAX+"℃），已自动按 "+TENV_MAX+"℃ 计算",true);
+    return TENV_MAX;
+  }
+  if(v < TENV_MIN){
+    _setHint(el,h,"⚠ 已达最低温度（下限 "+TENV_MIN+"℃），已自动按 "+TENV_MIN+"℃ 计算",true);
+    return TENV_MIN;
+  }
+  _setHint(el,h,"✓ 温度在有效范围内（"+TENV_MIN+" ~ "+TENV_MAX+"℃）",false);
+  return v;
+}
+
+/* ================= 冷库冷量计算 ================= */
+function calcCold(){
+  const L=+$("c_len").value,W=+$("c_wid").value,H=+$("c_hig").value;
+  const thk=Math.max(+$("c_thk").value,20)/1000;
+  const lam=+$("c_lam").value;
+  let tenv=checkTenv();
+  const tenvReal=tenv;
+  if(tenv>37) tenv=40;                       // >37℃ 按 40℃ 计算
+  const troom=checkTin();
+  const tpin=+$("c_tprod_in").value,tpout=+$("c_tprod_out").value;
+  const thrs=+$("c_time").value, runH=+$("c_run").value;
+  const load=+$("c_load").value, safe=(+$("c_safe").value||0)/100;
+  const gk=$("c_goods").value;
+  if(gk!=="custom"){const g=GOODS[gk];$("c_water").value=g[0];$("c_cp1").value=g[1];$("c_cp2").value=g[2];}
+  const w=(+$("c_water").value||0)/100,c1=+$("c_cp1").value,c2=+$("c_cp2").value;
+  const door=+$("c_door").value,ppl=+$("c_ppl").value,ppw=+$("c_ppw").value;
+  const runFrac=Math.min(runH,24)/24;
+
+  // ---- 几何 ----
+  const V=L*W*H;
+  const A_top=L*W,A_bot=L*W,A_e=L*H,A_w=W*H;
+  const botBare=$("f_botbare").checked;    // 地面无保温（水泥地面）
+  let A=0;
+  if($("f_top").checked)A+=A_top;
+  if($("f_bot").checked)A+=A_bot;
+  if($("f_e").checked)A+=A_e;
+  if($("f_w").checked)A+=A_w;
+  if($("f_s").checked)A+=A_e;
+  if($("f_n").checked)A+=A_w;
+  const faceList=["f_top","f_e","f_w","f_s","f_n"];
+  if($("f_bot").checked) faceList.push("f_bot");
+  if(botBare) faceList.push("f_botbare");
+  const faces=faceList.filter($).length;
+
+  // ---- Q1 围护结构传热 K·A·ΔT ----
+  const K=1/(thk/lam+0.16);                 // 含内外表面换热热阻 ≈0.16 m²K/W
+  const dT=tenv-troom;
+  const Q1=K*A*dT;
+
+  // ---- Q2 货物热（含冻结潜热，按含水率） ----
+  let dh=0;
+  if(tpin>0)dh+=c1*tpin; else dh+=c2*tpin;
+  if(tpout>0)dh-=c1*tpout; else dh-=c2*tpout;
+  let latent=0;
+  if(Math.min(tpin,tpout)<0&&Math.max(tpin,tpout)>0) latent=w*334.9;   // 跨越 0℃ 产生冻结/融化潜热
+  else if(tpin<0&&tpout<0&&tpin>tpout) latent=0;                        // 已冻结仅过冷
+  const Q2=load*(dh+latent)/(3.6*thrs);    // W = kg·kJ/kg /(3.6·h)
+
+  // ---- Q3 换气热 ----
+  let Q3=0;
+  if($("c_air").checked) Q3=V*1.29*1.005*dT*(+$("c_airn").value||3)/86.4;
+
+  // ---- Q4 操作热（开门+人员） ----
+  const Qdoor=0.02*Q1*door;               // 经验估算：基准每日10次
+  const Qppl=ppl*ppw*0.65;                 // 工作系数 0.65
+  const Q4=Qdoor+Qppl;
+
+  // ---- 设备发热 ----
+  let Qdev=+$("c_dev").value;
+  if(!Qdev) Qdev=3*V;                      // 自动按 3W/m³
+
+  // ---- 融霜热 ----
+  let Qdef=+$("c_def").value;
+  if(!Qdef) Qdef=0.05*Q1;
+
+  // ---- 地面防冻加热 ----
+  const Qfloor=$("c_floor").checked?(+$("c_floorw").value||15)*A_bot:0;
+
+  // ---- 无保温地面漏热（水泥地面，五面体） ----
+  // 水泥地面按「传热系数 × 库温与土壤温差」自动计算（含土壤热阻，K 常用经验值 0.6 W/m²·℃）
+  // 地面有保温时走六面体围护 K·ΔT，不在此项重复计算
+  const tsoil=+$("c_tsoil").value||12;
+  const dTsoil=Math.abs(troom-tsoil);          // 库温与地下土壤温度之差（取绝对值）
+  const kGround=+$("c_kg").value||0.6;         // 水泥地面传热系数 W/m²·℃
+  const qGround=kGround*dTsoil;                // 自动算出的漏热热流密度 W/m²
+  const Qground=botBare?A_bot*qGround:0;
+
+  // ---- 汇总（持续负荷按每日运行时间折算） ----
+  const Qcont=Q1+Q3+Q4+Qdev+Qdef+Qfloor+Qground;
+  const Qsum=Qcont*24/runH+Q2;
+  const Qtotal=Qsum*(1+safe);
+
+  // ---- 有效库容 / 储存吨位（GB 50072-2021 方法）----
+  const stackK=+$("c_stack").value;        // 堆码方式折减系数
+  const eta=utilCoef(V);                   // 容积利用系数（按库容分档）
+  const Veff=V*eta;                        // 有效容积（可堆货体积）m³
+  const rhoBase=(GB_DENSITY[gk]!==undefined?GB_DENSITY[gk]:400);  // 国标计算密度
+  const rho=rhoBase*stackK;                // 计入堆码方式后的实际堆密度
+  const ton=V*eta*rho/1000;                // 可储存货物量（吨）
+  // ---- 机型匹配 ----
+  const pwf=$("c_pw").value,reff=$("c_ref").value;
+  let cands=MACHINES.filter(m=>machOK(m,troom)&&(pwf==="all"||String(m.pw)===pwf)&&(reff==="all"||m.ref===reff))
+    .map(m=>({m,cap:capAt(m,troom,tenv)}));
+  cands.sort((a,b)=>a.cap-b.cap);
+  const fit=cands.filter(x=>x.cap>=Qtotal).slice(0,3);
+  const nearMiss=cands.filter(x=>x.cap<Qtotal).slice(-1);
+
+  // ---- 渲染 ----
+  let html=`
+  <h2 style="border:none;padding-left:0">📊 计算结果（环境温度：实际 ${fmt(tenvReal)}℃ → 计算 ${tenv}℃ 工况${tenvReal>37?' <span class="tag warn">已按 40℃ 折算</span>':''}）</h2>
+  <div class="kpis">
+    <div class="kpi"><span>库内容积（总库容）</span><b>${fmt(V)} m³</b></div>
+    <div class="kpi"><span>外露围护面积</span><b>${fmt(A)} m²（${faces}面${botBare?'，含水泥地面':''}）</b></div>
+    <div class="kpi"><span>传热系数 K</span><b>${K.toFixed(3)} W/m²·K</b></div>
+    <div class="kpi hl"><span>有效库容（可存货）</span><b>${fmt(Veff)} m³</b></div>
+    <div class="kpi hl"><span>可存放货物</span><b>≈ ${fmt(ton)} 吨</b></div>
+    <div class="kpi"><span>计算温差 ΔT</span><b>${fmt(dT)} ℃</b></div>
+  </div>
+  <div class="note">📦 <b>可存放货物计算（依据 GB 50072-2021 冷库设计标准）</b><br>
+  <b>【第1步】总库容 → 有效库容</b><br>
+  库内容积（总库容）${fmt(V)} m³ × 容积利用系数 η=${eta.toFixed(2)}（按库容分档）= 有效库容 <b>${fmt(Veff)} m³</b><br>
+  <b>【第2步】有效库容 → 可存放货物</b><br>
+  有效库容 ${fmt(Veff)} m³ × 食品计算密度 ${GB_DENSITY_LABEL[gk]||"自定义"} ${rhoBase} kg/m³ × 堆码折减 ${(stackK*100).toFixed(0)}%（实堆 ${rho.toFixed(0)} kg/m³）<br>
+  ➜ 约可存放 <b>${fmt(ton)} 吨</b>（≈ ${fmt0(ton*1000)} kg）<br>
+  <span style="color:#94a3b8">※ 可存放货物量以<b>有效库容</b>（已扣除通道、柱子、设备、货物间隔、托盘等占用空间）为基数计算，不是按总库容。</span><br>
+  实际存放量还受包装、堆放高度、作业通道等影响，请结合现场确定。</div>
+  <div class="total"><span>总冷量需求</span><span class="num">${fmt0(Qtotal)}</span><span class="unit">W ≈ ${(Qtotal/1000).toFixed(2)} kW ≈ ${fmt0(Qtotal*0.86)} kcal/h</span></div>
+  ${botBare?`<div class="note">🟫 <b>无保温地面（水泥地面）漏热已计入</b><br>
+  地面面积 ${fmt(A_bot)} m² × 传热系数 K=${kGround.toFixed(2)} W/m²·℃ × 土壤温差 ${fmt(dTsoil)}℃ = 热流 ${qGround.toFixed(1)} W/m² → <b>${fmt0(Qground)} W</b>（地下土壤温度按 ${tsoil}℃）<br>
+  注：拼装式冷库直接落于水泥地面、无保温层时，地坪漏热按水泥地面传热系数自动计算，已固定参与总冷量计算。</div>`:''}
+  <table>
+    <tr><th>分项负荷（依据《冷库设计规范》GB 50072 方法）</th><th class="r">W</th><th class="r">占比</th></tr>
+    <tr><td>Q1 围护结构传热（传热面积 ${fmt(A)}m²，温差 ${fmt(dT)}℃）</td><td class="r">${fmt0(Q1)}</td><td class="r">${(Q1/Qtotal*100).toFixed(1)}%</td></tr>
+    <tr><td>Q2 货物热（单次进货 ${fmt0(load)}kg，${thrs}h 内降温）</td><td class="r">${fmt0(Q2)}</td><td class="r">${(Q2/Qtotal*100).toFixed(1)}%</td></tr>
+    ${$("c_air").checked?`<tr><td>Q3 换气热（每日 ${$("c_airn").value} 次）</td><td class="r">${fmt0(Q3)}</td><td class="r">${(Q3/Qtotal*100).toFixed(1)}%</td></tr>`:''}
+    <tr><td>Q4 操作热（开门 ${door}次/日 + 人员 ${ppl}人）</td><td class="r">${fmt0(Q4)}</td><td class="r">${(Q4/Qtotal*100).toFixed(1)}%</td></tr>
+    <tr><td>设备发热（风机/照明，${$("c_dev").value?"手动":"自动 3W/m³"}）</td><td class="r">${fmt0(Qdev)}</td><td class="r">${(Qdev/Qtotal*100).toFixed(1)}%</td></tr>
+    <tr><td>融霜热负荷（${$("c_def").value?"手动":"自动按围护热 5%"}）</td><td class="r">${fmt0(Qdef)}</td><td class="r">${(Qdef/Qtotal*100).toFixed(1)}%</td></tr>
+    ${$("c_floor").checked?`<tr><td>地面防冻加热</td><td class="r">${fmt0(Qfloor)}</td><td class="r">${(Qfloor/Qtotal*100).toFixed(1)}%</td></tr>`:''}
+    ${botBare?`<tr><td>🟫 无保温地面漏热（水泥地面 ${fmt(A_bot)}m² × K=${kGround.toFixed(2)} × 温差 ${fmt(dTsoil)}℃）</td><td class="r">${fmt0(Qground)}</td><td class="r">${(Qground/Qtotal*100).toFixed(1)}%</td></tr>`:''}
+    <tr><td>持续负荷按每日运行 ${runH}h 折算</td><td class="r">—</td><td class="r">—</td></tr>
+    <tr><td><b>安全余量 ${$("c_safe").value}%</b></td><td class="r"><b>+${fmt0(Qsum*safe)}</b></td><td class="r">${(Qsum*safe/Qtotal*100).toFixed(1)}%</td></tr>
+    <tr><td style="color:#facc15"><b>合计总冷量需求</b></td><td class="r" style="color:#facc15"><b>${fmt0(Qtotal)} W</b></td><td class="r">100%</td></tr>
+  </table>`;
+
+  if(fit.length){
+    html+=`<h2 style="margin-top:16px">✅ 推荐机型方案（按库温 ${troom}℃ / 环温 ${tenv}℃ 工况取实际制冷量）</h2>`;
+    fit.forEach((x,i)=>{
+      const m=x.m,margin=(x.cap-Qtotal)/Qtotal*100;
+      const col=margin>=30?'var(--ok)':margin>=10?'var(--warn)':'var(--bad)';
+      const hp=hpLevel(m.nc);
+      html+=`<div class="mach ${i===0?'best':''}">
+        <h4>${i===0?'⭐ 首选方案 ':('备选 '+(i)+'：')}${m.n}</h4>
+        <div class="mrow">
+          <span>冷媒 <b>${m.ref}</b></span><span>电源 <b>${m.pw===220?'220V 单相':'380V 三相'}</b></span>
+          <span>名义制冷量 <b>${fmt0(m.nc)}W</b></span>
+          <span>本工况制冷量 <b>${fmt0(x.cap)}W</b></span>
+        </div>
+        <div style="margin-top:8px;font-size:13px">负荷覆盖率 <b style="color:var(--acc2)">${(x.cap/Qtotal*100).toFixed(0)}%</b>
+          <span class="tag ${margin>=30?'ok':margin>=10?'warn':'bad'}" style="color:${col}">剩余余量 ${margin.toFixed(1)}%</span>
+          <div class="bar"><i style="width:${Math.min(100,x.cap/Qtotal*100).toFixed(0)}%;background:linear-gradient(90deg,#0ea5e9,${col})"></i></div>
+        </div>
+      </div>`;
+    });
+    // ---- 多联机（多台组合）方案 ----
+    const multi=multiSplit(Qtotal, cands, hpLevel(fit[0].m.nc));
+    if(multi.length){
+      const baseHp=hpLevel(fit[0].m.nc);
+      html+=`<h2 style="margin-top:18px">🔗 多联机方案（可拆分为多台并联组合）</h2>`;
+      multi.forEach((s,idx)=>{
+        const col=s.marginPct>=30?'var(--ok)':s.marginPct>=10?'var(--warn)':'var(--bad)';
+        html+=`<div class="mach" style="${idx===0?'border-color:#22d3ee':''}">
+          <h4>🔗 ${s.count} 台组合方案：<b style="color:var(--acc2)">${s.count} 台机组并联</b></h4>
+          <div class="mrow">
+            <span>组合台数 <b>${s.count} 台</b></span>
+            <span>单台型号 <b>${s.unitName}</b></span><span>单台本工况 <b>${fmt0(s.unitCapW)}W</b></span>
+            <span>组合总能力 <b>${fmt0(s.totalCapW)}W</b></span>
+            <span>冷媒 <b>${s.ref}</b></span><span>单台电源 <b>${s.pw===220?'220V 单相':'380V 三相'}</b></span>
+          </div>
+          <div style="margin-top:8px;font-size:13px">负荷覆盖率 <b style="color:var(--acc2)">${(s.totalCapW/Qtotal*100).toFixed(0)}%</b>
+            <span class="tag" style="color:${col}">剩余余量 ${s.marginPct.toFixed(1)}%</span>
+            <div class="bar"><i style="width:${Math.min(100,s.totalCapW/Qtotal*100).toFixed(0)}%;background:linear-gradient(90deg,#06b6d4,${col})"></i></div>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:var(--sub)">💡 组合方式：${s.count} 台同规格机组并联运行，更灵活、部分负荷能效更高，且单台故障时仍可维持部分制冷能力。</div>
+        </div>`;
+      });
+    }
+  } else {
+    html+=`<p style="color:var(--bad);margin-top:12px">⚠ 现有筛选条件下没有满足需求的机型，需求 ${fmt0(Qtotal)}W${nearMiss?`，最接近为 ${nearMiss[0].m.n}（本工况 ${fmt0(nearMiss[0].cap)}W，缺 ${(100-nearMiss[0].cap/Qtotal*100).toFixed(0)}%）：建议多机并联或放宽筛选条件`:'，请放宽筛选条件'}。</p>`;
+  }
+  html+=`<div class="disc">⚠ 免责声明：结果仅供参考，需要根据现场实际使用工况结合计算。</div>`;
+  html+=`<div class="btnrow" style="margin-top:14px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button class="btn" style="padding:12px 30px;font-size:15px;background:linear-gradient(90deg,#059669,#10b981)" onclick="exportReport()">📄 导出计算报表</button>
+    <button class="btn" style="padding:12px 30px;font-size:15px;background:linear-gradient(90deg,#0369a1,#0ea5e9)" onclick="exportReportToDownloads()">📥 另存到「下载」目录</button>
+  </div>`;
+  return html;
+}
+
+/* 计算并渲染（页面按钮调用） */
+function runCold(){
+  const r=$("r1");
+  let html;
+  try{ html=calcCold(); }
+  catch(e){ r.innerHTML='<div class="disc">计算出错：'+(e&&e.message||e)+'</div>'; r.classList.add('show'); return; }
+  r.innerHTML=html;r.classList.add('show');r.scrollIntoView({behavior:'smooth'});
+}
+
+/* =================================================================
+ *  结果导出  ——  导出计算报表
+ *
+ *  两端通用：
+ *    · 手机 APK   → window.YairNative.saveHtml（Java 桥，弹分享面板）
+ *    · 普通浏览器 → 直接下载 HTML 文件（a[download]）
+ *
+ *  报表内容固定包含以下关键参数，避免只看到结果却记不清用了什么条件：
+ *    · 库内尺寸（长×宽×高）
+ *    · 设定温度（目标库温）
+ *    · 出库货物温度
+ *    · 允许降温时间
+ *    · 可存放货物 / 有效库容
+ *    · 计算结果（总冷量 + 分项负荷 + 推荐机型）
+ * ================================================================= */
+
+/* --- 通用：浏览器下载 --- */
+function _browserDownload(dataUrl, filename){
+  var a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+/* --- 文件名时间戳（便于区分多次计算） --- */
+function _planStamp(){
+  var d = new Date(), p = function(n){ return n<10?'0'+n:''+n; };
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes());
+}
+
+/* --- toast 提示 --- */
+function _toast(msg){
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;left:50%;bottom:40px;transform:translateX(-50%);'
+    + 'max-width:86vw;background:rgba(15,23,42,.95);color:#e2e8f0;border:1px solid #334155;'
+    + 'padding:11px 20px;border-radius:10px;font-size:14px;z-index:99999;'
+    + 'box-shadow:0 6px 20px rgba(0,0,0,.4);word-break:break-all';
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2800);
+}
+
+function _appVer(){
+  var m = document.querySelector('meta[name="app-version"]');
+  return (m && m.getAttribute('content')) || '-';
+}
+
+/* --- 读输入框（容错：取不到就给占位符） --- */
+function _val(id, unit){
+  var el = document.getElementById(id);
+  if(!el) return '—';
+  var v = el.value;
+  if(v === undefined || v === null || String(v).trim() === '') return '—';
+  return String(v) + (unit || '');
+}
+
+/* --- 构建报表 HTML（A4 排版，可直接打印/另存 PDF） --- */
+/* =================================================================
+ *  报表专用：去掉推导过程与算式，只保留结论
+ *
+ *  报表是给客户 / 存档看的，只需要"参数 → 结果"，
+ *  不需要把"怎么算出来的"（公式、系数、分步推导）写进去。
+ *  本函数只清洗导出的报表副本，页面上的显示保持原样。
+ * ================================================================= */
+function _stripFormulaFromReport(html){
+  /* 1) 「可存放货物计算」说明框：删掉第1步/第2步推导，保留结论与依据 */
+  html = html.replace(
+    /<div class="note">📦[\s\S]*?<\/div>/,
+    '<div class="note">📦 <b>可存放货物</b>（依据 GB 50072-2021 冷库设计标准，'
+      + '按已扣除通道、柱子、设备、货物间隔、托盘等占用空间后的<b>有效库容</b>计算）<br>'
+      + '实际存放量还受包装、堆放高度、作业通道等影响，请结合现场确定。</div>'
+  );
+  /* 2) 无保温地面漏热说明框：删掉算式，保留结论 */
+  html = html.replace(
+    /<div class="note">🟫[\s\S]*?<\/div>/,
+    '<div class="note">🟫 <b>无保温地面（水泥地面）漏热已计入总冷量</b>。'
+      + '拼装式冷库直接落于水泥地面、无保温层时，地坪会持续漏热，此项已固定参与计算。</div>'
+  );
+  /* 3) 分项负荷表里的说明性括注（面积、温差、次数等推导细节）做轻度清理 */
+  html = html.replace(
+    /（依据《冷库设计规范》GB 50072 方法）/g,
+    '（依据 GB 50072 方法）'
+  );
+  return html;
+}
+
+function _buildReportHTML(){
+  var out = document.getElementById('r1');
+  var body = '';
+  if(out && out.classList.contains('show')){
+    body = out.innerHTML;
+    /* 去掉结果区里的按钮行（报表不需要按钮） */
+    body = body.replace(/<div class="btnrow"[\s\S]*?<\/div>\s*$/,'');
+    /* 报表里不体现推导过程与算式，只保留结论 */
+    body = _stripFormulaFromReport(body);
+  }
+
+  var d = new Date();
+  var p = function(n){ return n<10?'0'+n:''+n; };
+  var timeStr = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())
+              + ' ' + p(d.getHours())+':'+p(d.getMinutes());
+
+  var title = (document.querySelector('header h1')||{}).textContent || '冷库冷量计算';
+  title = title.replace(/❄/g,'').trim();
+
+  /* ---------- 关键参数表：尺寸 / 温度 / 时间 ---------- */
+  var L = _val('c_len'), W = _val('c_wid'), H = _val('c_hig');
+  var dimTxt = (L==='—'||W==='—'||H==='—') ? '—'
+             : L+' m × '+W+' m × '+H+' m';
+  var volTxt = '—';
+  if(L!=='—' && W!=='—' && H!=='—'){
+    var vv = parseFloat(L)*parseFloat(W)*parseFloat(H);
+    if(!isNaN(vv)) volTxt = vv.toFixed(2)+' m³';
+  }
+
+  /* 从结果区抽取「有效库容」「可存放货物」（金色卡片），保证与计算口径一致 */
+  var veff = '—', ton = '—';
+  if(out && out.classList.contains('show')){
+    var hls = out.querySelectorAll('.kpi.hl b');
+    if(hls.length >= 2){ veff = hls[0].textContent.trim(); ton = hls[1].textContent.trim(); }
+    /* 兜底：拿不到金色卡片时直接从文本里找 */
+    if(veff === '—'){
+      var mm = out.innerText.match(/有效库容[^\d]*([\d.,]+\s*m³)/);
+      if(mm) veff = mm[1];
+    }
+    if(ton === '—'){
+      var m2 = out.innerText.match(/可存放货物[^\d]*≈?\s*([\d.,]+\s*吨)/);
+      if(m2) ton = m2[1];
+    }
+  }
+
+  var paramRows = [
+    ['库内尺寸（长 × 宽 × 高）', dimTxt, '库内容积（总库容）', volTxt],
+    ['目标设定温度', _val('c_tin',' ℃'), '外界环境温度', _val('c_tenv',' ℃')],
+    ['入库货物温度', _val('c_tprod_in',' ℃'), '出库货物温度', _val('c_tprod_out',' ℃')],
+    ['允许降温时间', _val('c_time',' h'), '压缩机每日运行时间', _val('c_run',' h')],
+    ['单次进货量', _val('c_load',' kg'), '安全余量预留', _val('c_safe',' %')],
+    ['有效库容（可存货）', veff, '可存放货物', ton]
+  ];
+
+  var paramHtml = '<h2>一、计算参数</h2><table class="param">'
+    + '<tr><th style="width:34%">参数项</th><th style="width:16%" class="r">数值</th>'
+    + '<th style="width:34%">参数项</th><th style="width:16%" class="r">数值</th></tr>';
+  for(var i=0;i<paramRows.length;i++){
+    var r = paramRows[i];
+    var hl1 = (r[0].indexOf('有效库容') >= 0 || r[0].indexOf('可存放货物') >= 0);
+    var hl2 = (r[2].indexOf('有效库容') >= 0 || r[2].indexOf('可存放货物') >= 0);
+    paramHtml += '<tr>'
+      + '<td'+(hl1?' class="hl"':'')+'>'+r[0]+'</td>'
+      + '<td class="r'+(hl1?' hl':'')+'"><b>'+r[1]+'</b></td>'
+      + '<td'+(hl2?' class="hl"':'')+'>'+r[2]+'</td>'
+      + '<td class="r'+(hl2?' hl':'')+'"><b>'+r[3]+'</b></td>'
+      + '</tr>';
+  }
+  /* 重要参数单独再强调一行 */
+  paramHtml += '<tr class="key"><td colspan="4">'
+    + '📌 核心参数：库内尺寸 <b>'+dimTxt+'</b>　｜　设定温度 <b>'+_val('c_tin',' ℃')+'</b>'
+    + '　｜　出库温度 <b>'+_val('c_tprod_out',' ℃')+'</b>'
+    + '　｜　降温时间 <b>'+_val('c_time',' h')+'</b>'
+    + '　｜　可存放货物 <b>'+ton+'</b>'
+    + '</td></tr>';
+  paramHtml += '</table>';
+
+  return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>冷库计算报表</title><style>'
+    + '*{box-sizing:border-box;margin:0;padding:0}'
+    + 'body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#fff;color:#111;padding:22px 26px;font-size:13px}'
+    + 'h1{font-size:20px;color:#0b5fa8;text-align:center;margin-bottom:4px}'
+    + '.meta{text-align:center;color:#666;font-size:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #0b5fa8}'
+    + 'h2{font-size:15px;color:#0b5fa8;margin:16px 0 8px;padding-left:8px;border-left:4px solid #0b5fa8}'
+    + '.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}'
+    + '.kpi{background:#f2f6fb;border:1px solid #d5e2f0;border-radius:6px;padding:9px;text-align:center}'
+    + '.kpi span{display:block;font-size:11px;color:#5a6b80}'
+    + '.kpi b{display:block;font-size:16px;color:#0b5fa8;margin-top:2px}'
+    + '.kpi.hl{background:#fff8e1;border-color:#f0d48a}'
+    + '.kpi.hl b{color:#b8860b}'
+    + '.note{background:#f7fafd;border:1px solid #dbe7f3;border-radius:6px;padding:10px;margin:10px 0;line-height:1.75}'
+    + 'table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}'
+    + 'th,td{border:1px solid #ccd8e5;padding:6px 8px;text-align:left}'
+    + 'th{background:#e7f0f9;color:#0b5fa8;font-weight:bold}'
+    + 'td.r,th.r{text-align:right}'
+    + 'td.hl,th.hl{background:#fff8e1}'
+    + 'td.hl b{color:#b8860b}'
+    + 'tr.key td{background:#eef6ff;border:1px solid #b8d5ef;line-height:2}'
+    + '.total{background:#0b5fa8;color:#fff;border-radius:6px;padding:12px 14px;margin:12px 0;display:flex;justify-content:space-between;align-items:center;font-size:15px}'
+    + '.total .num{font-size:22px;font-weight:bold}'
+    + '.disc{background:#fff4f4;border:1px solid #f0c8c8;color:#9b2c2c;border-radius:6px;padding:9px;margin:12px 0;font-size:12px}'
+    + '.badge{display:inline-block;background:#e7f0f9;color:#0b5fa8;border-radius:4px;padding:2px 7px;font-size:11px;margin-right:5px}'
+    + '.card{border:1px solid #dbe7f3;border-radius:6px;padding:10px;margin:8px 0;page-break-inside:avoid}'
+    + '.mach{border:1px solid #dbe7f3;border-radius:6px;padding:10px;margin:8px 0;page-break-inside:avoid}'
+    + '.mach.best{border-color:#b8860b;background:#fffdf5}'
+    + '.mach h4{font-size:13px;color:#0b5fa8;margin-bottom:5px}'
+    + '.mrow{font-size:12px;line-height:2}'
+    + '.mrow span{margin-right:14px;display:inline-block}'
+    + '.tag{display:inline-block;border-radius:4px;padding:1px 6px;font-size:11px}'
+    + '.tag.ok{background:#dcfce7;color:#166534}'
+    + '.tag.warn{background:#fef3c7;color:#92400e}'
+    + '.tag.bad{background:#fee2e2;color:#991b1b}'
+    + '.bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-top:5px}'
+    + '.bar i{display:block;height:100%;background:#0b5fa8}'
+    + 'footer{margin-top:20px;padding-top:10px;border-top:1px solid #ccd8e5;color:#888;font-size:11px;text-align:center}'
+    + '@media print{body{padding:0}h2{page-break-after:avoid}}'
+    + '</style></head><body>'
+    + '<h1>'+title+' · 计算报表</h1>'
+    + '<div class="meta">生成时间：'+timeStr
+    + '　|　软件版本：'+ _appVer() +'</div>'
+    + paramHtml
+    + '<h2>二、计算结果</h2>'
+    + body
+    + '<footer>本报表由 Yair 冷库冷量计算软件自动生成，结果仅供参考，需结合实际使用工况复核。</footer>'
+    + '</body></html>';
+}
+
+/* =================================================================
+ *  导出报表
+ *
+ *  两个途径，避免用户"生成后找不到报表"：
+ *    [主途径] exportReport()
+ *        · 手机端 → window.YairNative.saveHtml（存 App 目录 + 弹窗可打开/分享）
+ *        · 浏览器 → 直接下载
+ *    [备用途径] exportReportToDownloads()
+ *        · 手机端 → window.YairNative.saveHtmlPublic（存系统「下载」目录，
+ *                   在文件管理器里一定能找到）
+ *        · 浏览器 → 直接下载
+ * ================================================================= */
+function _reportHTMLandName(){
+  var out = document.getElementById('r1');
+  if(!out || !out.classList.contains('show')){ _toast('请先点击「计算总冷量」'); return null; }
+  return { html: _buildReportHTML(), name: '冷库计算报表_'+_planStamp()+'.html' };
+}
+
+function exportReport(){
+  var r = _reportHTMLandName();
+  if(!r) return;
+
+  /* 手机端 */
+  if(window.YairNative && window.YairNative.saveHtml){
+    try { window.YairNative.saveHtml(r.html, r.name); _toast('已保存报表：'+r.name); return; } catch(e){}
+  }
+  /* 浏览器 */
+  _downloadText(r.html, r.name);
+  _toast('已下载报表：'+r.name);
+}
+
+/* 第二个保存途径：存到系统「下载」目录（手机） */
+function exportReportToDownloads(){
+  var r = _reportHTMLandName();
+  if(!r) return;
+
+  /* 手机端：走公开目录（用 MediaStore，无需存储权限） */
+  if(window.YairNative && window.YairNative.saveHtmlPublic){
+    try { window.YairNative.saveHtmlPublic(r.html, r.name);
+          _toast('已保存到「下载」目录：'+r.name); return; } catch(e){}
+  }
+  /* 浏览器 */
+  _downloadText(r.html, r.name);
+  _toast('已下载报表：'+r.name);
+}
+
+/* 统一的文本文件下载（浏览器环境） */
+function _downloadText(text, name){
+  var blob = new Blob([text], {type:'text/html;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  _browserDownload(url, name);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
+/* 打印当前报表（浏览器 / 手机端可用，可直接另存为 PDF） */
+function printReport(){
+  var r = _reportHTMLandName();
+  if(!r) return;
+  var w = window.open('', '_blank');
+  if(!w){ _toast('浏览器拦截了弹出窗口，请允许后重试'); return; }
+  w.document.write(r.html);
+  w.document.close();
+  setTimeout(function(){ try { w.print(); } catch(e){} }, 400);
+}
+
+/* 版本号显示 */
+(function(){
+  try {
+    var el = document.getElementById('ver_tag');
+    if(el) el.textContent = _appVer();
+  } catch(e){}
+})();
+
+/* ================= 水变冰计算 ================= */
+function calcIce(){
+  const m0=+$("i_m").value,t1=+$("i_t1").value,t2=+$("i_t2").value;
+  const th=+$("i_t").value,runH=+$("i_run").value,safe=(+$("i_safe").value||0)/100;
+  let tenv=+$("i_tenv").value;const tenvReal=tenv;
+  if(tenv>37)tenv=40;
+  const Q1=m0*4.187*Math.max(t1,0);           // 水降温
+  const Q2=m0*334.9;                           // 相变潜热
+  const Q3=m0*2.1*Math.abs(Math.min(t2,0));    // 冰过冷
+  const Qsum=Q1+Q2+Q3;
+  const P=Qsum/(3.6*th);                       // W
+  const Pday=P*24/runH;                        // 折算每日运行时间
+  const Ptotal=Pday*(1+safe);
+  const kg=m0,斤=m0*2;
+  const pwf=$("i_pw").value,reff=$("i_ref").value;
+  // 制冰属冷冻工况，取库温近似 -10℃（取目标冰温与0中间）评估；直接用目标冰温更保守 → 用 t2
+  const roomT=Math.min(t2,-10);
+  let cands=MACHINES.filter(m=>m.use==="LD"&&(pwf==="all"||String(m.pw)===pwf)&&(reff==="all"||m.ref===reff))
+    .map(m=>({m,cap:capAt(m,roomT,tenv)})).sort((a,b)=>a.cap-b.cap);
+  const fit=cands.filter(x=>x.cap>=Ptotal).slice(0,3);
+
+  let html=`
+  <h2 style="border:none;padding-left:0">💧 制冰计算结果（${fmt0(斤)} 斤（${fmt(kg)}kg）水在 ${th}h 内变成 ${t2}℃ 的冰 ｜ 环温 ${fmt(tenvReal)}℃ → 计算 ${tenv}℃ 工况${tenvReal>37?' <span class="tag warn">已按 40℃ 折算</span>':''}）</h2>
+  <table>
+    <tr><th>三段热负荷</th><th class="r">kJ</th><th class="r">占比</th></tr>
+    <tr><td>① 水从 ${fmt(t1)}℃ 降至 0℃</td><td class="r">${fmt0(Q1)}</td><td class="r">${(Q1/Qsum*100).toFixed(1)}%</td></tr>
+    <tr><td>② 0℃ 水结成 0℃ 冰</td><td class="r">${fmt0(Q2)}</td><td class="r">${(Q2/Qsum*100).toFixed(1)}%</td></tr>
+    <tr><td>③ 冰从 0℃ 过冷至 ${t2}℃</td><td class="r">${fmt0(Q3)}</td><td class="r">${(Q3/Qsum*100).toFixed(1)}%</td></tr>
+    <tr><td><b>总放热量</b></td><td class="r"><b>${fmt0(Qsum)}</b></td><td class="r">100%</td></tr>
+  </table>
+  <div class="total"><span>所需冷量</span><span class="num">${fmt0(Ptotal)}</span><span class="unit">W ≈ ${(Ptotal/1000).toFixed(2)} kW（含安全余量 ${$("i_safe").value}%，按每日运行 ${runH}h 折算）</span></div>
+  <div class="kpis">
+    <div class="kpi"><span>纯制冰功率</span><b>${fmt0(P)} W</b></div>
+    <div class="kpi"><span>单位耗冷</span><b>${fmt0(Qsum/kg)} kJ/kg</b></div>
+    <div class="kpi"><span>制冰速率</span><b>${fmt(kg/th)} kg/h</b></div>
+  </div>`;
+  if(fit.length){
+    html+=`<h2>✅ 推荐制冷机组（按库温 ${roomT}℃ / 环温 ${tenv}℃ 工况）</h2>`;
+    fit.forEach((x,i)=>{
+      const m=x.m,margin=(x.cap-Ptotal)/Ptotal*100;
+      const col=margin>=30?'var(--ok)':margin>=10?'var(--warn)':'var(--bad)';
+      html+=`<div class="mach ${i===0?'best':''}">
+        <h4>${i===0?'⭐ 首选方案 ':'备选 '+(i)+'：'}${m.n}</h4>
+        <div class="mrow">
+          <span>冷媒 <b>${m.ref}</b></span><span>电源 <b>${m.pw===220?'220V 单相':'380V 三相'}</b></span>
+          <span>名义制冷量 <b>${fmt0(m.nc)}W</b></span>
+          <span>本工况制冷量 <b>${fmt0(x.cap)}W</b></span>
+        </div>
+        <div style="margin-top:8px;font-size:13px">负荷覆盖率 <b style="color:var(--acc2)">${(x.cap/Ptotal*100).toFixed(0)}%</b>
+          <span class="tag" style="color:${col}">剩余余量 ${margin.toFixed(1)}%</span>
+          <div class="bar"><i style="width:${Math.min(100,x.cap/Ptotal*100).toFixed(0)}%;background:linear-gradient(90deg,#0ea5e9,${col})"></i></div>
+        </div></div>`;
+    });
+    // ---- 多联机方案 ----
+    const multi=multiSplit(Ptotal, cands, hpLevel(fit[0].m.nc));
+    if(multi.length){
+      const baseHp=hpLevel(fit[0].m.nc);
+      html+=`<h2 style="margin-top:18px">🔗 多联机方案（可拆分为多台并联组合）</h2>`;
+      multi.forEach((s,idx)=>{
+        const col=s.marginPct>=30?'var(--ok)':s.marginPct>=10?'var(--warn)':'var(--bad)';
+        html+=`<div class="mach" style="${idx===0?'border-color:#22d3ee':''}">
+          <h4>🔗 ${s.count} 台组合方案：<b style="color:var(--acc2)">${s.count} 台机组并联</b></h4>
+          <div class="mrow">
+            <span>组合台数 <b>${s.count} 台</b></span>
+            <span>单台型号 <b>${s.unitName}</b></span><span>单台本工况 <b>${fmt0(s.unitCapW)}W</b></span>
+            <span>组合总能力 <b>${fmt0(s.totalCapW)}W</b></span>
+            <span>冷媒 <b>${s.ref}</b></span><span>单台电源 <b>${s.pw===220?'220V 单相':'380V 三相'}</b></span>
+          </div>
+          <div style="margin-top:8px;font-size:13px">负荷覆盖率 <b style="color:var(--acc2)">${(s.totalCapW/Ptotal*100).toFixed(0)}%</b>
+            <span class="tag" style="color:${col}">剩余余量 ${s.marginPct.toFixed(1)}%</span>
+            <div class="bar"><i style="width:${Math.min(100,s.totalCapW/Ptotal*100).toFixed(0)}%;background:linear-gradient(90deg,#06b6d4,${col})"></i></div>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:var(--sub)">💡 ${s.count} 台同规格机组并联，结冰高峰可全开、保温阶段可单开，运行更省电。</div>
+        </div>`;
+      });
+    }
+  }else{
+    html+=`<p style="color:var(--bad);margin-top:12px">⚠ 现有冷冻机型在 ${th}h 内无法完成，最接近方案能力缺 ${(100-cands[cands.length-1].cap/Ptotal*100).toFixed(0)}%，请延长结冰时间、减少水量或多机并联。</p>`;
+  }
+  html+=`<div class="disc">⚠ 免责声明：结果仅供参考，需要根据现场实际使用工况结合计算。</div>`;
+  const r=$("r2");r.innerHTML=html;r.classList.add('show');r.scrollIntoView({behavior:'smooth'});
+}
+
+/* ================= 机型库表格 ================= */
+function renderDB(){
+  const pw=$("v_pw").value,ref=$("v_ref").value,use=$("v_use").value;
+  let rows=MACHINES.filter(m=>(pw==="all"||String(m.pw)===pw)&&(ref==="all"||m.ref===ref)&&(use==="all"||m.use===use));
+  let html=`<tr><th>机组型号</th><th>冷媒</th><th>电源</th><th>用途</th><th class="r">名义制冷量(W)<br><small>库温27℃/环温32℃</small></th><th class="r">环温32℃/40℃ 制冷量(W)<br><small>库温0℃(冷藏) / -15℃(冷冻)</small></th></tr>`;
+  rows.forEach(m=>{
+    const refT=m.use==="LC"?0:-15;
+    const col={32:1,40:2}[32];
+    const c32=m.t.find(r=>r[0]===refT)[1], c40=m.t.find(r=>r[0]===refT)[2];
+    html+=`<tr><td>${m.n}</td><td>${m.ref}</td><td>${m.pw===220?'220V 单相':'380V 三相'}</td>
+      <td>${m.use==="LC"?'冷藏(-5~40℃)':'冷冻(-20~40℃)'}</td>
+      <td class="r">${fmt0(m.nc)}</td><td class="r">${fmt0(c32)} / ${fmt0(c40)}</td></tr>`;
+  });
+  if(!rows.length)html=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--sub)">无匹配机型</td></tr>`;
+  $("dbT").innerHTML=html;
+}
+renderDB();
+
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');$(b.dataset.p).classList.add('active');
+});
+/* 货物种类联动 */
+$("c_goods").onchange=()=>{const gk=$("c_goods").value;if(gk!=="custom"){const g=GOODS[gk];$("c_water").value=g[0];$("c_cp1").value=g[1];$("c_cp2").value=g[2];}};
+
+/* 温度范围实时校验（输入即提示） */
+(function(){
+  var tin=$("c_tin"), tenv=$("c_tenv");
+  if(tin){ tin.addEventListener("input",checkTin); tin.addEventListener("change",checkTin); }
+  if(tenv){ tenv.addEventListener("input",checkTenv); tenv.addEventListener("change",checkTenv); }
+  /* 初始校验一次，显示绿色范围提示 */
+  if(tin) checkTin();
+  if(tenv) checkTenv();
+})();
+
+/* 地面保温 / 无保温（水泥地面）互斥 —— 二者只能选其一 */
+(function(){
+  var fb=$("f_bot"), fbb=$("f_botbare"), h=$("f_bot_hint");
+  function syncBot(){
+    var bare=fbb.checked;
+    if(bare){
+      fb.checked=false;
+      fb.disabled=true;
+      if(h){ h.className="hint ok"; h.textContent='🟫 已选「地面无保温（水泥地面）」：地面无保温层，将按水泥地面传热系数 × 土壤温差自动计算漏热并计入总冷量'; }
+    }else{
+      fb.disabled=false;
+      if(h){ h.className="hint"; h.textContent=''; }
+    }
+  }
+  function syncIns(){
+    if(fb.checked){
+      fbb.checked=false;
+      if(h){ h.className="hint"; h.textContent=''; }
+    }
+    syncBot();
+  }
+  if(fbb) fbb.addEventListener("change",syncBot);
+  if(fb)  fb.addEventListener("change",syncIns);
+  syncBot();
+})();
+
+</script>
+<script>
+/* 离线状态提示（不影响任何功能，仅提示用户可放心断网使用） */
+window.addEventListener('load',function(){
+  var tip=document.createElement('div');
+  tip.id='offlineTip';
+  tip.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:900;background:rgba(74,222,128,.14);color:#4ade80;border:1px solid rgba(74,222,128,.4);border-radius:20px;padding:6px 16px;font-size:12px;transition:.4s';
+  tip.textContent='✓ 本页面已完全离线运行，可断网使用';
+  document.body.appendChild(tip);
+  setTimeout(function(){tip.style.opacity='0';},3500);
+  setTimeout(function(){tip.remove();},4200);
+});
+</script>
+<script>
+/* ============================================================================
+ *  版本检查（ES5 编写，兼容旧内核 与 Android WebView）
+ *
+ *  重要：更新提示由「外壳程序」统一负责（手机版 APK），
+ *  它只关心自己平台的版本：
+ *    · 手机版只看 apkVersion / apkUrl  → 只提示 .apk
+ *
+ *  本页内脚本只做「离线优先」的静默探测，不弹任何提示条，避免重复提示。
+ * ==========================================================================*/
+(function(){
+  "use strict";
+  var CUR_VER = "1.0.0";
+  var meta = document.querySelector('meta[name="app-version"]');
+  if (meta && meta.getAttribute('content')) CUR_VER = meta.getAttribute('content');
+  var urlMeta = document.querySelector('meta[name="update-url"]');
+  var UPDATE_URL = urlMeta ? urlMeta.getAttribute('content') : "";
+  if (!UPDATE_URL) return;
+
+  /* 版本号比较：a 比 b 新返回 true */
+  function newer(a, b){
+    var pa = String(a).split('.'), pb = String(b).split('.');
+    var n = Math.max(pa.length, pb.length);
+    for (var i = 0; i < n; i++){
+      var x = parseInt(pa[i] || '0', 10), y = parseInt(pb[i] || '0', 10);
+      if (x > y) return true;
+      if (x < y) return false;
+    }
+    return false;
+  }
+
+  /* 静默探测：仅用于把最新页面预取到 sessionStorage 备用，
+   * 不弹提示条（提示由外壳程序负责），也不改任何界面 */
+  function check(){
+    var xhr = new XMLHttpRequest();
+    var done = false;
+    var timer = setTimeout(function(){
+      if (done) return;
+      done = true;
+      try { xhr.abort(); } catch (e) {}
+    }, 2000);
+    try {
+      xhr.open('GET', UPDATE_URL + '?t=' + Date.now(), true);
+      xhr.onreadystatechange = function(){
+        if (xhr.readyState !== 4 || done) return;
+        done = true;
+        clearTimeout(timer);
+        if (xhr.status !== 200) return;
+        var info;
+        try { info = JSON.parse(xhr.responseText); } catch (e) { return; }
+        if (!info) return;
+        /* 只记录，不提示 */
+        try {
+          var pv = info.pageVersion || "";
+          if (pv) sessionStorage.setItem('yair_page_ver_seen', pv);
+        } catch (e) {}
+      };
+      xhr.send(null);
+    } catch (e) {
+      clearTimeout(timer);
+    }
+  }
+
+  window.addEventListener('load', function(){
+    setTimeout(check, 1500);
+  });
+})();
+</script>
+</body>
+</html>
