@@ -1,0 +1,10 @@
+{
+  "pageVersion": "1.8.24",
+  "apkVersion": "1.8.24",
+  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.8.24.apk",
+  "releaseDate": "2026-10-16",
+  "changelog": [
+    "Modified the lower temperature limit: target room temperature and goods outbound temperature minimum changed from -20C to -25C"
+  ],
+  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
+}
