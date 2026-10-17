@@ -1,0 +1,12 @@
+{
+  "pageVersion": "1.9.0",
+  "apkVersion": "1.9.0",
+  "cfgVersion": "1.9.0",
+  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.9.0.apk",
+  "releaseDate": "2026-10-17",
+  "changelog": [
+    "New configurable parameter system: unit capacities, volume limits, quotation templates and defaults are now driven by config files, loaded automatically online",
+    "Config hot-update for app and web: upload the new config file and every device picks it up without reinstalling"
+  ],
+  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
+}
