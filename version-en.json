@@ -1,0 +1,23 @@
+{
+  "pageVersion": "1.9.0",
+  "apkVersion": "1.9.0",
+  "cfgVersion": "1.9.0",
+  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.9.0.apk",
+  "releaseDate": "2026-10-18",
+  "changelog": [
+    "Ice page: new \"reverse mode\" — work backwards from a target total capacity (kW) or daily ice output (kg/day) to the unit size you need; switch between forward and reverse with one tap",
+    "In reverse mode the water-mass and freezing-time fields are greyed out and marked, so they are clearly not missing",
+    "Ice page safety margin is now wired to the parameter config, so config changes apply there too and both pages share one basis",
+    "Reverse-mode target limits and defaults are now configurable (revLimits); no code change is needed when a customer's scale exceeds the old range",
+    "Config tool: new \"ice page parameters\" panel stating exactly what can and cannot be changed, and why",
+    "English edition: all remaining Chinese removed from pages, exported reports and runtime messages",
+    "New configurable parameter system: unit capacities, volume limits, quotation templates and defaults are now driven by config files, loaded automatically online",
+    "Config hot-update for app and web: upload the new config file and every device picks it up without reinstalling",
+    "Ice page: removed the ambient-temperature correction factor — required cooling now depends only on water amount and ice temperature; unit selection still uses the ambient column of the capacity table",
+    "Ice page: added \"estimated daily ice output\" — derived from the recommended unit's capacity at the given conditions over 24h continuous operation",
+    "Ice page: target ice temperature now has a -25 °C lower limit — any lower input is calculated at -25 °C with a notice, matching the cold room page",
+    "Fixed cold room page showing a temperature in the input box that differed from the value actually used in the calculation",
+    "Fixed the capacity library not being listed on first load"
+  ],
+  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
+}

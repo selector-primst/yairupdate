@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yair 更新后台 · 上传状态检查</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --line:#334155;
+    --txt:#e2e8f0; --sub:#94a3b8; --ok:#22c55e; --bad:#ef4444;
+    --warn:#f59e0b; --acc:#38bdf8; --acc2:#0ea5e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f172a,#1a2740 60%,#0f172a);
+    color:var(--txt);min-height:100vh;padding:22px 16px 40px;
+  }
+  .wrap{max-width:920px;margin:0 auto}
+  header{text-align:center;margin-bottom:22px}
+  header h1{font-size:22px;font-weight:700;letter-spacing:.5px}
+  header h1 .ic{color:var(--acc)}
+  header p{color:var(--sub);font-size:13px;margin-top:6px}
+  .verbar{
+    display:inline-flex;gap:8px;align-items:center;margin-top:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;font-size:12px;color:var(--sub);
+  }
+  .verbar b{color:var(--acc)}
+  .btnrow{display:flex;gap:10px;justify-content:center;margin:18px 0 22px;flex-wrap:wrap}
+  button{
+    cursor:pointer;border:none;border-radius:9px;padding:11px 22px;
+    font-size:14px;font-weight:600;color:#fff;
+    background:linear-gradient(90deg,#0284c7,#0ea5e9);
+    transition:.18s;font-family:inherit;
+  }
+  button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(14,165,233,.35)}
+  button:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+  button.ghost{background:var(--card2);border:1px solid var(--line)}
+  .summary{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin-bottom:16px;text-align:center;
+  }
+  .summary .big{font-size:19px;font-weight:700;margin-bottom:6px}
+  .summary .big.ok{color:var(--ok)}
+  .summary .big.bad{color:var(--bad)}
+  .summary .big.loading{color:var(--acc)}
+  .summary .desc{font-size:13px;color:var(--sub);line-height:1.7}
+  .grid{display:grid;gap:12px}
+  .item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;display:flex;align-items:center;gap:14px;
+    transition:.2s;
+  }
+  .item.ok{border-color:rgba(34,197,94,.5);background:linear-gradient(90deg,rgba(34,197,94,.08),var(--card))}
+  .item.bad{border-color:rgba(239,68,68,.5);background:linear-gradient(90deg,rgba(239,68,68,.08),var(--card))}
+  .item.warn{border-color:rgba(245,158,11,.5);background:linear-gradient(90deg,rgba(245,158,11,.08),var(--card))}
+  .dot{
+    width:34px;height:34px;border-radius:9px;flex:0 0 34px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;background:var(--card2);
+  }
+  .item.ok .dot{background:rgba(34,197,94,.2)}
+  .item.bad .dot{background:rgba(239,68,68,.2)}
+  .item.warn .dot{background:rgba(245,158,11,.2)}
+  .body{flex:1;min-width:0}
+  .name{font-size:14px;font-weight:600;margin-bottom:3px;word-break:break-all}
+  .meta{font-size:12px;color:var(--sub);line-height:1.6;word-break:break-all}
+  .state{font-size:12px;font-weight:700;white-space:nowrap;padding:4px 10px;border-radius:6px}
+  .item.ok .state{color:var(--ok);background:rgba(34,197,94,.15)}
+  .item.bad .state{color:var(--bad);background:rgba(239,68,68,.15)}
+  .item.warn .state{color:var(--warn);background:rgba(245,158,11,.15)}
+  .sec-title{
+    font-size:13px;font-weight:700;color:var(--sub);margin:22px 0 10px;
+    padding-left:9px;border-left:3px solid var(--acc2);letter-spacing:.5px;
+  }
+  .tips{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;font-size:13px;line-height:1.9;color:var(--sub);margin-top:16px;
+  }
+  .tips b{color:var(--txt)}
+  .tips code{
+    background:#0b1220;border:1px solid var(--line);border-radius:4px;
+    padding:1px 6px;font-size:12px;color:var(--acc);word-break:break-all;
+  }
+  a{color:var(--acc);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);
+    border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .ts{text-align:center;font-size:11px;color:#64748b;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1><span class="ic">❄</span> Yair 更新后台 · 上传状态检查</h1>
+    <p>检查更新文件是否已成功上传到 GitHub</p>
+    <div class="verbar">
+      期望版本 <b id="expVer">--</b>
+      <span>·</span>
+      <span id="repoHost">--</span>
+    </div>
+  </header>
+
+  <div class="btnrow">
+    <button id="btnCheck">🔄 开始检查</button>
+    <button id="btnOpen" class="ghost">🌐 打开更新源</button>
+  </div>
+
+  <div class="summary">
+    <div class="big loading" id="sumBig"><span class="spin"></span> 正在检查 …</div>
+    <div class="desc" id="sumDesc">正在连接 GitHub，请稍候</div>
+  </div>
+
+  <div class="sec-title">要上传的文件（7 个）</div>
+  <div class="grid" id="fileGrid"></div>
+
+  <div class="sec-title">更新链路体检</div>
+  <div class="grid" id="linkGrid"></div>
+
+  <div class="tips">
+    <b>怎么用这个页面？</b><br>
+    1. 把上传包里的 7 个文件传到 GitHub 仓库根目录<br>
+    2. 等 1~2 分钟（GitHub Pages 需要构建时间）<br>
+    3. 回到本页点「开始检查」，全绿就说明成功了<br>
+    <br>
+    <b>如果显示"未找到"：</b>多半是还没传、或 Pages 还在构建，等一会儿再点一次。<br>
+    <b>如果版本号不对：</b>说明仓库里还是旧文件，把旧的删掉重新上传即可。
+  </div>
+
+  <div class="ts" id="ts"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+   *  配置：由构建脚本注入（https://selector-primst.github.io/yairupdate / 1.9.0 / Yair_v1.9.0.apk）
+   * ============================================================ */
+  var UPDATE_BASE  = "https://selector-primst.github.io/yairupdate";
+  var PAGE_BASE    = "https://selector-primst.github.io/yairupdate/";
+  var EXPECT_VER   = "1.9.0";
+  var APK_NAME     = "Yair_v1.9.0.apk";
+  var APK_NAME_EN  = "SelectorPrimst_EN_v1.9.0.apk";
+
+  /* 备用源（jsDelivr） */
+  var MIRROR_BASE  = "https://cdn.jsdelivr.net/gh/selector-primst/yairupdate@main";
+
+  var FILES = [
+    { key:'index.html',     name:'index.html',                icon:'📄', desc:'中文主页面（手机端显示）' },
+    { key:'index.ie.html',  name:'index.ie.html',             icon:'📄', desc:'中文页面 · 旧内核兼容版' },
+    { key:'index.en.html',  name:'index.en.html',             icon:'🌐', desc:'英文主页面（PRIMST 品牌）' },
+    { key:'index.en.ie.html',name:'index.en.ie.html',         icon:'🌐', desc:'英文页面 · 旧内核兼容版' },
+    { key:'version.json',   name:'version.json',              icon:'🔖', desc:'中文版更新开关（决定是否提示更新）' },
+    { key:'version-en.json',name:'version-en.json',           icon:'🔖', desc:'英文版更新开关' },
+    { key:'apk',            name:APK_NAME,                    icon:'📱', desc:'中文版手机安装包（Yair）' },
+    { key:'apk-en',         name:APK_NAME_EN,                 icon:'📱', desc:'英文版手机安装包（selectorprimst）' },
+    { key:'status.html',    name:'status.html',               icon:'🔧', desc:'本检测页自身' }
+  ];
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmtSize(b){
+    if(b==null) return '';
+    if(b<1024) return b+' B';
+    if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+    return (b/1024/1024).toFixed(2)+' MB';
+  }
+
+  /* 探测单个文件是否存在：用带时间戳的 GET + Range，避免缓存 */
+  function probe(base, name){
+    return new Promise(function(resolve){
+      var url = base.replace(/\/$/,'') + '/' + encodeURI(name) + '?t=' + Date.now();
+      var done = false;
+      var timer = setTimeout(function(){
+        if(done) return; done = true;
+        resolve({ ok:false, reason:'超时', url:url });
+      }, 12000);
+
+      fetch(url, { method:'GET', headers:{ 'Range':'bytes=0-0' }, cache:'no-store' })
+        .then(function(r){
+          if(done) return;
+          clearTimeout(timer); done = true;
+          if(!r.ok && r.status !== 206){ resolve({ ok:false, status:r.status, url:url }); return; }
+          /* 尝试取完整大小 */
+          var cr = r.headers.get('content-range');
+          var size = null;
+          if(cr && cr.indexOf('/') >= 0){ size = parseInt(cr.split('/')[1], 10); }
+          resolve({ ok:true, status:r.status, size:size, url:url });
+        })
+        .catch(function(e){
+          if(done) return;
+          clearTimeout(timer); done = true;
+          resolve({ ok:false, reason:(e && e.message) || '网络错误', url:url });
+        });
+    });
+  }
+
+  /* 读取 version.json 内容 */
+  function fetchJson(base){
+    return new Promise(function(resolve){
+      var url = base.replace(/\/$/,'') + '/version.json?t=' + Date.now();
+      fetch(url, { cache:'no-store' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){ resolve(j); })
+        .catch(function(){ resolve(null); });
+    });
+  }
+
+  function renderFiles(results){
+    var html = '';
+    results.forEach(function(r){
+      var cls = r.ok ? 'ok' : 'bad';
+      var state = r.ok ? '已上传' : '未找到';
+      if(r.ok && r.expectSize && r.size && Math.abs(r.size - r.expectSize) > 4096){
+        cls = 'warn'; state = '大小不符';
+      }
+      var meta = r.desc;
+      if(r.ok && r.size) meta += '　·　' + fmtSize(r.size);
+      if(!r.ok) meta += '　·　' + (r.reason ? r.reason : ('HTTP ' + r.status));
+      html += '<div class="item '+cls+'">'
+        + '<div class="dot">'+r.icon+'</div>'
+        + '<div class="body"><div class="name">'+esc(r.name)+'</div>'
+        + '<div class="meta">'+esc(meta)+'</div></div>'
+        + '<div class="state">'+state+'</div>'
+        + '</div>';
+    });
+    $('fileGrid').innerHTML = html;
+  }
+
+  function renderLink(items){
+    var html = '';
+    items.forEach(function(r){
+      var cls = r.ok ? 'ok' : (r.warn ? 'warn' : 'bad');
+      html += '<div class="item '+cls+'">'
+        + '<div class="dot">'+r.icon+'</div>'
+        + '<div class="body"><div class="name">'+esc(r.title)+'</div>'
+        + '<div class="meta">'+esc(r.desc)+'</div></div>'
+        + '<div class="state">'+(r.ok?'正常':(r.warn?'注意':'异常'))+'</div>'
+        + '</div>';
+    });
+    $('linkGrid').innerHTML = html;
+  }
+
+  function run(){
+    $('btnCheck').disabled = true;
+    $('btnCheck').innerHTML = '<span class="spin"></span> 检查中 …';
+    $('sumBig').className = 'big loading';
+    $('sumBig').innerHTML = '<span class="spin"></span> 正在检查 …';
+    $('sumDesc').textContent = '正在连接 GitHub，请稍候';
+    $('fileGrid').innerHTML = '';
+    $('linkGrid').innerHTML = '';
+
+    /* 先联网读 version.json，拿到它里面 apkUrl 指向的真实 APK 文件名；
+       读不到就退回构建时注入的 APK_NAME 兜底。
+       —— 这样即使以后改了 APK 命名，检测页也不会误报 404 */
+    fetchJson(UPDATE_BASE).then(function(json){
+      if(!json && MIRROR_BASE){ return fetchJson(MIRROR_BASE); }
+      return json;
+    }).then(function(json){
+      var liveApkName = APK_NAME;
+      if(json && json.apkUrl){
+        var n = json.apkUrl.split('/').pop().split('?')[0];
+        if(n){ try{ liveApkName = decodeURIComponent(n); }catch(e){ liveApkName = n; } }
+      }
+      return runProbe(liveApkName, json);
+    });
+  }
+
+  function runProbe(liveApkName, preJson){
+    var fileResults = [];
+    var jobs = FILES.map(function(f){
+      var filename = (f.key === 'apk') ? liveApkName : f.name;
+      return probe(UPDATE_BASE, filename).then(function(res){
+        /* 主源失败时试镜像 */
+        if(!res.ok && MIRROR_BASE){
+          return probe(MIRROR_BASE, filename).then(function(res2){
+            if(res2.ok){ res2.viaMirror = true; return res2; }
+            return res;
+          });
+        }
+        return res;
+      }).then(function(res){
+        res.name = filename; res.icon = f.icon; res.desc = f.desc;
+        fileResults.push(res);
+      });
+    });
+    Promise.all(jobs).then(function(){
+      renderFiles(fileResults);
+
+      /* ---- 链路体检（复用已读到的 version.json，避免重复请求）---- */
+      return Promise.resolve(preJson).then(function(json){
+        var linkItems = [];
+        var apkRes = fileResults.filter(function(r){ return r.icon === '📱'; })[0];
+        var allFilesOk = fileResults.every(function(r){ return r.ok; });
+
+        /* 1. version.json 可读 */
+        linkItems.push({
+          icon:'🔖', title:'version.json 可读取',
+          desc: json ? ('页面版本 ' + (json.pageVersion||'?') + '　·　APK 版本 ' + (json.apkVersion||'?')) : '读取失败，检查文件是否已上传',
+          ok: !!json
+        });
+
+        /* 2. 版本号匹配 */
+        var verOk = !!(json && json.apkVersion === EXPECT_VER && json.pageVersion === EXPECT_VER);
+        linkItems.push({
+          icon:'🏷️', title:'版本号与本地一致',
+          desc: verOk ? ('仓库 ' + json.apkVersion + ' ↔ 本地 ' + EXPECT_VER + '，一致')
+                      : (json ? ('仓库版本 ' + json.apkVersion + '，本地 ' + EXPECT_VER + '，不一致（可能仓库还是旧文件）')
+                              : '无法比对，version.json 未读到'),
+          ok: verOk, warn: !!json && !verOk
+        });
+
+        /* 3. apkUrl 指向的文件可下载 */
+        var apkUrlOk = false, apkUrlDesc = 'apkUrl 未读到';
+        if(json && json.apkUrl){
+          var wantName = json.apkUrl.split('/').pop();
+          apkUrlOk = !!(apkRes && apkRes.ok);
+          apkUrlDesc = apkUrlOk
+            ? ('apkUrl 指向 ' + decodeURI(wantName) + '，可下载')
+            : ('apkUrl 指向 ' + decodeURI(wantName) + '，但文件未找到');
+        }
+        linkItems.push({ icon:'⬇️', title:'APK 下载地址可用', desc: apkUrlDesc, ok: apkUrlOk });
+
+        /* 4. APK 体积合理 */
+        var sizeOk = !!(apkRes && apkRes.ok && apkRes.size && apkRes.size > 20*1024);
+        linkItems.push({
+          icon:'📦', title:'APK 体积正常',
+          desc: apkRes && apkRes.size ? fmtSize(apkRes.size) : '（大小未取到，可能被服务器隐藏）',
+          ok: apkRes && apkRes.ok ? (apkRes.size ? sizeOk : true) : false,
+          warn: !!(apkRes && apkRes.ok && !apkRes.size)
+        });
+
+        /* 5. 手机端会不会弹更新 —— 综合判断 */
+        var willUpdate = allFilesOk && verOk && apkUrlOk;
+        linkItems.push({
+          icon:'🔔', title:'手机端会收到更新提示',
+          desc: willUpdate
+            ? '装旧版的用户打开 App 会收到「发现新版本 v' + EXPECT_VER + '」'
+            : '条件未满足，手机端暂时不会提示（见上方各项）',
+          ok: willUpdate
+        });
+
+        /* ---- 英文版链路体检（读 version-en.json 并校验英文 APK）---- */
+        function probeJson(base, fname){
+          return new Promise(function(resolve){
+            var url = base.replace(/\/$/,'') + '/' + fname + '?t=' + Date.now();
+            var done = false;
+            var t = setTimeout(function(){ if(done) return; done=true; resolve(null); }, 10000);
+            fetch(url, { cache:'no-store' }).then(function(r){
+              if(done) return; clearTimeout(t); done = true;
+              if(!r.ok) return resolve(null);
+              return r.json().then(resolve).catch(function(){ resolve(null); });
+            }).catch(function(){ if(done) return; clearTimeout(t); done=true; resolve(null); });
+          });
+        }
+        return probeJson(UPDATE_BASE, 'version-en.json').then(function(j){ if(!j) return probeJson(MIRROR_BASE,'version-en.json'); return j; }).then(function(je){
+          var apkEnRes = fileResults.filter(function(r){ return r.name && r.name.indexOf('SelectorPrimst') >= 0; })[0];
+          var verEnOk = !!(je && je.apkVersion === EXPECT_VER);
+          var enUrlOk = false, enName = '—';
+          if(je && je.apkUrl){
+            enName = decodeURI(je.apkUrl.split('/').pop().split('?')[0]);
+            enUrlOk = !!(apkEnRes && apkEnRes.ok);
+          }
+          linkItems.push({
+            icon:'🌐', title:'英文版 version-en.json 可读取',
+            desc: je ? ('英文版版本 ' + (je.apkVersion||'?')) : '未读到（若你未发布英文版，可忽略此项）',
+            ok: !!je, warn: !je
+          });
+          linkItems.push({
+            icon:'🌐', title:'英文版更新地址可用',
+            desc: (je && je.apkUrl) ? (enUrlOk ? ('apkUrl 指向 ' + enName + '，可下载') : ('apkUrl 指向 ' + enName + '，但文件未找到'))
+                                    : '未读到英文版 apkUrl',
+            ok: !!je && enUrlOk
+          });
+          /* 英文版链路是否可用（未发布英文版时视为不阻断） */
+          var enOk = enUrlOk && verEnOk;
+          var enHas = !!je;
+          finish(linkItems, willUpdate, enOk, enHas, apkEnRes, fileResults);
+        }).catch(function(){
+          finish(linkItems, willUpdate, false, false, null, fileResults);
+        });
+      });
+    }).catch(function(e){
+      $('sumBig').className = 'big bad';
+      $('sumBig').textContent = '❌ 检查出错';
+      $('sumDesc').textContent = (e && e.message) || '未知错误';
+    }).then(function(){
+      $('btnCheck').disabled = false;
+      $('btnCheck').innerHTML = '🔄 重新检查';
+    });
+  }
+
+  /* 收尾：渲染 + 总评（等中英文两条链路都判完再出结论） */
+  function finish(linkItems, willUpdate, enOk, enHas, apkEnRes, fileResults){
+    renderLink(linkItems);
+
+    var cnOk = willUpdate;
+    var bothOk = cnOk && (!enHas ? false : enOk);
+    var allOk  = fileResults.every(function(r){ return r.ok; });
+
+    if(cnOk && enHas && enOk){
+      $('sumBig').className = 'big ok';
+      $('sumBig').textContent = '✅ 上传成功，中英文都正常';
+      $('sumDesc').textContent = '9 个文件全部就位，版本 ' + EXPECT_VER + ' 已生效，中文版与英文版均可收到更新。';
+    } else if(cnOk && !enHas){
+      $('sumBig').className = 'big ok';
+      $('sumBig').textContent = '✅ 中文版正常（英文版未发布）';
+      $('sumDesc').textContent = '中文版 6 个文件就位，版本 ' + EXPECT_VER + ' 已生效；英文版文件未上传。';
+    } else if(cnOk && enHas && !enOk){
+      $('sumBig').className = 'big warn';
+      $('sumBig').textContent = '⚠ 中文版正常，英文版待确认';
+      $('sumDesc').textContent = '中文版可以收到更新；英文版 version-en.json 或英文 APK 有问题，请看下方英文版体检项。';
+    } else if(allOk){
+      $('sumBig').className = 'big warn';
+      $('sumBig').textContent = '⚠ 文件都在，但有细节要确认';
+      $('sumDesc').textContent = '文件已上传，但版本号或下载地址有疑问，请看下方体检结果。';
+    } else {
+      var miss = fileResults.filter(function(r){ return !r.ok; }).length;
+      $('sumBig').className = 'big bad';
+      $('sumBig').textContent = '❌ 还有 ' + miss + ' 个文件未找到';
+      $('sumDesc').textContent = '可能还没上传，或 GitHub Pages 还在构建（等 1~2 分钟再点一次）。';
+    }
+    $('ts').textContent = '检查时间：' + new Date().toLocaleString('zh-CN');
+  }
+
+  /* 初始化 */
+  $('expVer').textContent = EXPECT_VER;
+  try{ $('repoHost').textContent = UPDATE_BASE.replace(/^https?:\/\//,'').split('/')[0]; }catch(e){}
+  $('btnCheck').onclick = run;
+  $('btnOpen').onclick = function(){
+    var u = UPDATE_BASE.replace(/\/$/,'') + '/version.json';
+    window.open(u, '_blank');
+  };
+
+  /* 自动检查一次 */
+  run();
+})();
+</script>
+</body>
+</html>
