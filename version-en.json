@@ -1,9 +1,0 @@
-{
-  "pageVersion": "1.9.6",
-  "apkVersion": "1.9.6",
-  "cfgVersion": "1.9.6",
-  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.9.6.apk",
-  "releaseDate": "2026-11-03",
-  "changelog": [],
-  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
-}
