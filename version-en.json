@@ -1,0 +1,14 @@
+{
+  "pageVersion": "1.9.8",
+  "apkVersion": "1.9.8",
+  "cfgVersion": "1.9.8",
+  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.9.8.apk",
+  "releaseDate": "2026-11-04",
+  "changelog": [
+    "Auto intake ratio now uses a dual check (goods type + room temperature) and takes the lower value",
+    "By goods type: chilled fresh goods 15% (down from 18%), frozen goods 8%",
+    "By room temp: <=-12C -> 8%, -12~-2C -> 12%, >-2C -> 15%",
+    "The hint shows which limit applies; manual selection 2%-18% takes priority"
+  ],
+  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
+}
