@@ -1,0 +1,14 @@
+{
+  "pageVersion": "1.9.9",
+  "apkVersion": "1.9.9",
+  "cfgVersion": "1.9.9",
+  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.9.9.apk",
+  "releaseDate": "2026-11-05",
+  "changelog": [
+    "Fixed intake-limit rounding mismatch: entering the displayed limit no longer triggers a false over-limit warning",
+    "Recommended intake value now refreshes in real time when inputs change; accurate unit-based estimate resumes after recalculating",
+    "New auto-fill for goods-per-batch: fills the recommended value and follows parameter changes; manual input takes priority, with a Restore auto-fill button",
+    "English version no longer includes the container packing feature"
+  ],
+  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
+}
