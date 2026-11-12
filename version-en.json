@@ -1,0 +1,14 @@
+{
+  "pageVersion": "1.9.12",
+  "apkVersion": "1.9.12",
+  "cfgVersion": "1.9.12",
+  "apkUrl": "https://selector-primst.github.io/yairupdate/SelectorPrimst_EN_v1.9.12.apk",
+  "releaseDate": "2026-11-12",
+  "changelog": [
+    "All editions unified to version 1.9.12 (page, config, packing module and update manifest)",
+    "English edition supports in-page EN / Chinese switching",
+    "Report export refinements: summary row fits at zoom, no duplicated values, unified column widths and row heights",
+    "Packing calculator loads on demand; all five tabs available in the Chinese edition"
+  ],
+  "note": "PRIMST Cold Room Cooling Load Calculator - English edition. pageVersion triggers live page update; apkVersion/apkUrl trigger the APK update prompt."
+}
