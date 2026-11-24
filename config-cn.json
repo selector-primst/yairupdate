@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema": 1,
-    "cfgVersion": "1.9.12",
+    "cfgVersion": "1.9.13",
     "lang": "cn",
     "updatedAt": "2026-10-17T00:00:00Z"
   },
@@ -2855,5 +2855,644 @@
   },
   "texts": {
     "title": "冷库冷量计算"
+  },
+  "packing": {
+    "products": [
+      {
+        "model": "PISC-02Wa1",
+        "capacity": "2HP",
+        "series": "R410A",
+        "indoor": {
+          "L": 759,
+          "W": 440,
+          "H": 649,
+          "gross": 21.9
+        },
+        "outdoor": {
+          "L": 855,
+          "W": 367,
+          "H": 600,
+          "gross": 28
+        }
+      },
+      {
+        "model": "PISF-03Wa1",
+        "capacity": "3HP",
+        "series": "R410A",
+        "indoor": {
+          "L": 759,
+          "W": 440,
+          "H": 649,
+          "gross": 22.6
+        },
+        "outdoor": {
+          "L": 855,
+          "W": 367,
+          "H": 600,
+          "gross": 38
+        }
+      },
+      {
+        "model": "PISF-04Wa1",
+        "capacity": "4HP",
+        "series": "R410A",
+        "indoor": {
+          "L": 1388,
+          "W": 440,
+          "H": 649,
+          "gross": 37.1
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 51
+        }
+      },
+      {
+        "model": "PISF-05Wa1",
+        "capacity": "5HP",
+        "series": "R410A",
+        "indoor": {
+          "L": 1388,
+          "W": 440,
+          "H": 649,
+          "gross": 37.1
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 57
+        }
+      },
+      {
+        "model": "PISF-05WSa1",
+        "capacity": "5HP/3P",
+        "series": "R410A",
+        "indoor": {
+          "L": 1388,
+          "W": 440,
+          "H": 649,
+          "gross": 37.1
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 58.5
+        }
+      },
+      {
+        "model": "PISF-08Wa1",
+        "capacity": "8HP",
+        "series": "R410A",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 53.7
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 58.5
+        }
+      },
+      {
+        "model": "PISF-08WSa1",
+        "capacity": "8HP/3P",
+        "series": "R410A",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 53.7
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 59.5
+        }
+      },
+      {
+        "model": "PISF-10WSa1",
+        "capacity": "10HP/3P",
+        "series": "R410A",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 61.5
+        },
+        "outdoor": {
+          "L": 1083,
+          "W": 523,
+          "H": 932,
+          "gross": 96
+        }
+      },
+      {
+        "model": "PISF-12WSa1",
+        "capacity": "12HP/3P",
+        "series": "R410A",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 61.5
+        },
+        "outdoor": {
+          "L": 1080,
+          "W": 463,
+          "H": 1533,
+          "gross": 122
+        }
+      },
+      {
+        "model": "PISF-16WSa1",
+        "capacity": "16HP/3P",
+        "series": "R410A",
+        "indoor": {
+          "L": 2500,
+          "W": 480,
+          "H": 935,
+          "gross": 110.9
+        },
+        "outdoor": {
+          "L": 1080,
+          "W": 523,
+          "H": 1730,
+          "gross": 157
+        }
+      },
+      {
+        "model": "PISF-20WSa1",
+        "capacity": "20HP/3P",
+        "series": "R410A",
+        "indoor": {
+          "L": 2500,
+          "W": 480,
+          "H": 935,
+          "gross": 110.9
+        },
+        "outdoor": {
+          "L": 1080,
+          "W": 523,
+          "H": 1730,
+          "gross": 157
+        }
+      },
+      {
+        "model": "PISF-40WSa1",
+        "capacity": "40HP/3P",
+        "series": "R410A",
+        "indoorQty": 2,
+        "indoor": {
+          "L": 2500,
+          "W": 480,
+          "H": 935,
+          "gross": 110.9
+        },
+        "outdoor": {
+          "L": 1780,
+          "W": 1000,
+          "H": 1880,
+          "gross": 435
+        }
+      },
+      {
+        "model": "PISC-02Wf1",
+        "capacity": "2HP",
+        "series": "R32",
+        "indoor": {
+          "L": 759,
+          "W": 440,
+          "H": 649,
+          "gross": 21.9
+        },
+        "outdoor": {
+          "L": 855,
+          "W": 367,
+          "H": 600,
+          "gross": 28
+        }
+      },
+      {
+        "model": "PISF-03Wf1",
+        "capacity": "3HP",
+        "series": "R32",
+        "indoor": {
+          "L": 759,
+          "W": 440,
+          "H": 649,
+          "gross": 22.6
+        },
+        "outdoor": {
+          "L": 855,
+          "W": 367,
+          "H": 600,
+          "gross": 38
+        }
+      },
+      {
+        "model": "PISF-04Wf1",
+        "capacity": "4HP",
+        "series": "R32",
+        "indoor": {
+          "L": 1388,
+          "W": 440,
+          "H": 649,
+          "gross": 37.1
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 51
+        }
+      },
+      {
+        "model": "PISF-05Wf1",
+        "capacity": "5HP",
+        "series": "R32",
+        "indoor": {
+          "L": 1388,
+          "W": 440,
+          "H": 649,
+          "gross": 37.1
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 57
+        }
+      },
+      {
+        "model": "PISF-05WSf1",
+        "capacity": "5HP/3P",
+        "series": "R32",
+        "indoor": {
+          "L": 1388,
+          "W": 440,
+          "H": 649,
+          "gross": 37.1
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 58.5
+        }
+      },
+      {
+        "model": "PISF-08Wf1",
+        "capacity": "8HP",
+        "series": "R32",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 53.7
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 58.5
+        }
+      },
+      {
+        "model": "PISF-08WSf1",
+        "capacity": "8HP/3P",
+        "series": "R32",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 53.7
+        },
+        "outdoor": {
+          "L": 1039,
+          "W": 450,
+          "H": 780,
+          "gross": 59.5
+        }
+      },
+      {
+        "model": "PISF-10WSf1",
+        "capacity": "10HP/3P",
+        "series": "R32",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 61.5
+        },
+        "outdoor": {
+          "L": 1083,
+          "W": 523,
+          "H": 932,
+          "gross": 96
+        }
+      },
+      {
+        "model": "PISF-12WSf1",
+        "capacity": "12HP/3P",
+        "series": "R32",
+        "indoor": {
+          "L": 2020,
+          "W": 440,
+          "H": 650,
+          "gross": 61.5
+        },
+        "outdoor": {
+          "L": 1080,
+          "W": 463,
+          "H": 1533,
+          "gross": 122
+        }
+      },
+      {
+        "model": "PISF-16WSf1",
+        "capacity": "16HP/3P",
+        "series": "R32",
+        "indoor": {
+          "L": 2500,
+          "W": 480,
+          "H": 935,
+          "gross": 110.9
+        },
+        "outdoor": {
+          "L": 1080,
+          "W": 523,
+          "H": 1730,
+          "gross": 157
+        }
+      },
+      {
+        "model": "PISF-20WSf1",
+        "capacity": "20HP/3P",
+        "series": "R32",
+        "indoor": {
+          "L": 2500,
+          "W": 480,
+          "H": 935,
+          "gross": 110.9
+        },
+        "outdoor": {
+          "L": 1080,
+          "W": 523,
+          "H": 1730,
+          "gross": 157
+        }
+      },
+      {
+        "model": "PISF-40WSf1",
+        "capacity": "40HP/3P",
+        "series": "R32",
+        "indoorQty": 2,
+        "indoor": {
+          "L": 2500,
+          "W": 480,
+          "H": 935,
+          "gross": 110.9
+        },
+        "outdoor": {
+          "L": 1780,
+          "W": 1000,
+          "H": 1880,
+          "gross": 435
+        }
+      }
+    ],
+    "containerLibrary": [
+      {
+        "id": "20GP",
+        "name": "20尺标准柜",
+        "en": "20ft GP",
+        "L": 5898,
+        "W": 2352,
+        "H": 2392,
+        "doorW": 2340,
+        "doorH": 2280,
+        "maxWeight": 26000,
+        "tag": "小柜灵活",
+        "standard": true
+      },
+      {
+        "id": "20HQ",
+        "name": "20尺高柜",
+        "en": "20ft HQ",
+        "L": 5898,
+        "W": 2352,
+        "H": 2698,
+        "doorW": 2340,
+        "doorH": 2585,
+        "maxWeight": 26000,
+        "tag": "小柜装高货",
+        "standard": true
+      },
+      {
+        "id": "40GP",
+        "name": "40尺标准柜",
+        "en": "40ft GP",
+        "L": 12032,
+        "W": 2352,
+        "H": 2392,
+        "doorW": 2340,
+        "doorH": 2280,
+        "maxWeight": 26500,
+        "tag": "大宗运输主力",
+        "standard": true
+      },
+      {
+        "id": "40HQ",
+        "name": "40尺高柜",
+        "en": "40ft HQ",
+        "L": 12032,
+        "W": 2352,
+        "H": 2698,
+        "doorW": 2340,
+        "doorH": 2585,
+        "maxWeight": 26500,
+        "tag": "轻抛货首选",
+        "standard": true
+      },
+      {
+        "id": "45HQ",
+        "name": "45尺高柜",
+        "en": "45ft HQ",
+        "L": 13556,
+        "W": 2352,
+        "H": 2698,
+        "doorW": 2340,
+        "doorH": 2585,
+        "maxWeight": 27600,
+        "tag": "容积最大",
+        "standard": true
+      },
+      {
+        "id": "40RH",
+        "name": "40尺冷藏柜",
+        "en": "40ft Reefer",
+        "L": 11556,
+        "W": 2294,
+        "H": 2554,
+        "doorW": 2290,
+        "doorH": 2549,
+        "maxWeight": 27000,
+        "tag": "冷藏恒温",
+        "standard": false
+      },
+      {
+        "id": "20RH",
+        "name": "20尺冷藏柜",
+        "en": "20ft Reefer",
+        "L": 5444,
+        "W": 2294,
+        "H": 2282,
+        "doorW": 2290,
+        "doorH": 2272,
+        "maxWeight": 24000,
+        "tag": "小柜冷藏",
+        "standard": false
+      },
+      {
+        "id": "40OT",
+        "name": "40尺开顶柜",
+        "en": "40ft Open Top",
+        "L": 12032,
+        "W": 2352,
+        "H": 2332,
+        "doorW": 2340,
+        "doorH": 2218,
+        "maxWeight": 26500,
+        "tag": "顶装长大件",
+        "standard": false
+      },
+      {
+        "id": "20OT",
+        "name": "20尺开顶柜",
+        "en": "20ft Open Top",
+        "L": 5898,
+        "W": 2352,
+        "H": 2332,
+        "doorW": 2340,
+        "doorH": 2218,
+        "maxWeight": 26000,
+        "tag": "小柜顶装",
+        "standard": false
+      },
+      {
+        "id": "53HQ",
+        "name": "53尺内贸高柜",
+        "en": "53ft HQ",
+        "L": 16154,
+        "W": 2499,
+        "H": 2896,
+        "doorW": 2438,
+        "doorH": 2591,
+        "maxWeight": 27000,
+        "tag": "美线内贸特大",
+        "standard": false
+      }
+    ],
+    "containers": [
+      {
+        "id": "20GP",
+        "name": "20尺标准柜",
+        "en": "20ft GP",
+        "L": 5898,
+        "W": 2352,
+        "H": 2392,
+        "doorW": 2340,
+        "doorH": 2280,
+        "maxWeight": 26000,
+        "tag": "小柜灵活",
+        "standard": true
+      },
+      {
+        "id": "40GP",
+        "name": "40尺标准柜",
+        "en": "40ft GP",
+        "L": 12032,
+        "W": 2352,
+        "H": 2392,
+        "doorW": 2340,
+        "doorH": 2280,
+        "maxWeight": 26500,
+        "tag": "大宗运输主力",
+        "standard": true
+      },
+      {
+        "id": "40HQ",
+        "name": "40尺高柜",
+        "en": "40ft HQ",
+        "L": 12032,
+        "W": 2352,
+        "H": 2698,
+        "doorW": 2340,
+        "doorH": 2585,
+        "maxWeight": 26500,
+        "tag": "轻抛货首选",
+        "standard": true
+      },
+      {
+        "id": "45HQ",
+        "name": "45尺高柜",
+        "en": "45ft HQ",
+        "L": 13556,
+        "W": 2352,
+        "H": 2698,
+        "doorW": 2340,
+        "doorH": 2585,
+        "maxWeight": 27600,
+        "tag": "容积最大",
+        "standard": true
+      }
+    ],
+    "defaultSettings": {
+      "sizeBuffer": 0.03,
+      "bufferMode": "mm",
+      "bufferMm": 10,
+      "bufferMmL": 10,
+      "bufferMmW": 10,
+      "bufferMmH": 10,
+      "minSupport": 0.6,
+      "enforceWeight": true,
+      "mode": "auto",
+      "timeBudgetMs": 4000,
+      "balance": false,
+      "groupAdjacency": true,
+      "corner": {
+        "enabled": false,
+        "L": 150,
+        "W": 120,
+        "H": 120
+      }
+    },
+    "demoQuantities": {
+      "PISF-05Wf1": 40,
+      "PISF-08Wf1": 20,
+      "PISF-12Wf1": 8
+    },
+    "palette": [
+      "#3b82f6",
+      "#f97316",
+      "#10b981",
+      "#8b5cf6",
+      "#ef4444",
+      "#14b8a6",
+      "#f59e0b",
+      "#ec4899",
+      "#6366f1",
+      "#84cc16",
+      "#06b6d4",
+      "#f43f5e"
+    ]
   }
 }

@@ -3,7 +3,7 @@
   "apkVersion": "1.9.12",
   "cfgVersion": "1.9.12",
   "apkUrl": "https://selector-primst.github.io/yairupdate/Yair_v1.9.12.apk",
-  "releaseDate": "2026-11-20",
+  "releaseDate": "2026-11-24",
   "changelog": [
     "版本统一更新至 1.9.12（页面、配置、装箱模块、更新中心版本号一致）",
     "英文版支持页面内 EN / 中文 无缝切换，中文沿用原有表述",

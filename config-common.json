@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema": 1,
-    "cfgVersion": "1.9.12",
+    "cfgVersion": "1.9.13",
     "updatedAt": "2026-10-17T00:00:00Z",
     "note": "公共参数：改一次中英文都生效（Common config: applies to both editions）"
   },
